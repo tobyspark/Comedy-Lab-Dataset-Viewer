@@ -1,0 +1,494 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A611FBF719225EBE008E0ABD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FBF619225EBE008E0ABD /* Cocoa.framework */; };
+		A611FC0119225EBE008E0ABD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A611FBFF19225EBE008E0ABD /* InfoPlist.strings */; };
+		A611FC0319225EBE008E0ABD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC0219225EBE008E0ABD /* main.m */; };
+		A611FC0719225EBE008E0ABD /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = A611FC0519225EBE008E0ABD /* Credits.rtf */; };
+		A611FC0A19225EBE008E0ABD /* TBZDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC0919225EBE008E0ABD /* TBZDocument.m */; };
+		A611FC0D19225EBE008E0ABD /* TBZDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = A611FC0B19225EBE008E0ABD /* TBZDocument.xib */; };
+		A611FC1019225EBE008E0ABD /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = A611FC0E19225EBE008E0ABD /* MainMenu.xib */; };
+		A611FC1219225EBE008E0ABD /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A611FC1119225EBE008E0ABD /* Images.xcassets */; };
+		A611FC1919225EBF008E0ABD /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC1819225EBF008E0ABD /* XCTest.framework */; };
+		A611FC1A19225EBF008E0ABD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FBF619225EBE008E0ABD /* Cocoa.framework */; };
+		A611FC2219225EBF008E0ABD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A611FC2019225EBF008E0ABD /* InfoPlist.strings */; };
+		A611FC2419225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC2319225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A611FC1B19225EBF008E0ABD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A611FBEB19225EBE008E0ABD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A611FBF219225EBE008E0ABD;
+			remoteInfo = "Comedy Lab Dataset Viewer";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A611FBF319225EBE008E0ABD /* Comedy Lab Dataset Viewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Comedy Lab Dataset Viewer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A611FBF619225EBE008E0ABD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		A611FBF919225EBE008E0ABD /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		A611FBFA19225EBE008E0ABD /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		A611FBFB19225EBE008E0ABD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		A611FBFE19225EBE008E0ABD /* Comedy Lab Dataset Viewer-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Comedy Lab Dataset Viewer-Info.plist"; sourceTree = "<group>"; };
+		A611FC0019225EBE008E0ABD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A611FC0219225EBE008E0ABD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		A611FC0419225EBE008E0ABD /* Comedy Lab Dataset Viewer-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Comedy Lab Dataset Viewer-Prefix.pch"; sourceTree = "<group>"; };
+		A611FC0619225EBE008E0ABD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		A611FC0819225EBE008E0ABD /* TBZDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TBZDocument.h; sourceTree = "<group>"; };
+		A611FC0919225EBE008E0ABD /* TBZDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TBZDocument.m; sourceTree = "<group>"; };
+		A611FC0C19225EBE008E0ABD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/TBZDocument.xib; sourceTree = "<group>"; };
+		A611FC0F19225EBE008E0ABD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		A611FC1119225EBE008E0ABD /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		A611FC1719225EBF008E0ABD /* Comedy Lab Dataset ViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Comedy Lab Dataset ViewerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A611FC1819225EBF008E0ABD /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		A611FC1F19225EBF008E0ABD /* Comedy Lab Dataset ViewerTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Comedy Lab Dataset ViewerTests-Info.plist"; sourceTree = "<group>"; };
+		A611FC2119225EBF008E0ABD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A611FC2319225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Comedy_Lab_Dataset_ViewerTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A611FBF019225EBE008E0ABD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A611FBF719225EBE008E0ABD /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A611FC1419225EBF008E0ABD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A611FC1A19225EBF008E0ABD /* Cocoa.framework in Frameworks */,
+				A611FC1919225EBF008E0ABD /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A611FBEA19225EBE008E0ABD = {
+			isa = PBXGroup;
+			children = (
+				A611FBFC19225EBE008E0ABD /* Comedy Lab Dataset Viewer */,
+				A611FC1D19225EBF008E0ABD /* Comedy Lab Dataset ViewerTests */,
+				A611FBF519225EBE008E0ABD /* Frameworks */,
+				A611FBF419225EBE008E0ABD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A611FBF419225EBE008E0ABD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A611FBF319225EBE008E0ABD /* Comedy Lab Dataset Viewer.app */,
+				A611FC1719225EBF008E0ABD /* Comedy Lab Dataset ViewerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A611FBF519225EBE008E0ABD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A611FBF619225EBE008E0ABD /* Cocoa.framework */,
+				A611FC1819225EBF008E0ABD /* XCTest.framework */,
+				A611FBF819225EBE008E0ABD /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A611FBF819225EBE008E0ABD /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A611FBF919225EBE008E0ABD /* AppKit.framework */,
+				A611FBFA19225EBE008E0ABD /* CoreData.framework */,
+				A611FBFB19225EBE008E0ABD /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		A611FBFC19225EBE008E0ABD /* Comedy Lab Dataset Viewer */ = {
+			isa = PBXGroup;
+			children = (
+				A611FC0819225EBE008E0ABD /* TBZDocument.h */,
+				A611FC0919225EBE008E0ABD /* TBZDocument.m */,
+				A611FC0B19225EBE008E0ABD /* TBZDocument.xib */,
+				A611FC0E19225EBE008E0ABD /* MainMenu.xib */,
+				A611FC1119225EBE008E0ABD /* Images.xcassets */,
+				A611FBFD19225EBE008E0ABD /* Supporting Files */,
+			);
+			path = "Comedy Lab Dataset Viewer";
+			sourceTree = "<group>";
+		};
+		A611FBFD19225EBE008E0ABD /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				A611FBFE19225EBE008E0ABD /* Comedy Lab Dataset Viewer-Info.plist */,
+				A611FBFF19225EBE008E0ABD /* InfoPlist.strings */,
+				A611FC0219225EBE008E0ABD /* main.m */,
+				A611FC0419225EBE008E0ABD /* Comedy Lab Dataset Viewer-Prefix.pch */,
+				A611FC0519225EBE008E0ABD /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		A611FC1D19225EBF008E0ABD /* Comedy Lab Dataset ViewerTests */ = {
+			isa = PBXGroup;
+			children = (
+				A611FC2319225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m */,
+				A611FC1E19225EBF008E0ABD /* Supporting Files */,
+			);
+			path = "Comedy Lab Dataset ViewerTests";
+			sourceTree = "<group>";
+		};
+		A611FC1E19225EBF008E0ABD /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				A611FC1F19225EBF008E0ABD /* Comedy Lab Dataset ViewerTests-Info.plist */,
+				A611FC2019225EBF008E0ABD /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A611FBF219225EBE008E0ABD /* Comedy Lab Dataset Viewer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A611FC2719225EBF008E0ABD /* Build configuration list for PBXNativeTarget "Comedy Lab Dataset Viewer" */;
+			buildPhases = (
+				A611FBEF19225EBE008E0ABD /* Sources */,
+				A611FBF019225EBE008E0ABD /* Frameworks */,
+				A611FBF119225EBE008E0ABD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Comedy Lab Dataset Viewer";
+			productName = "Comedy Lab Dataset Viewer";
+			productReference = A611FBF319225EBE008E0ABD /* Comedy Lab Dataset Viewer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A611FC1619225EBF008E0ABD /* Comedy Lab Dataset ViewerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A611FC2A19225EBF008E0ABD /* Build configuration list for PBXNativeTarget "Comedy Lab Dataset ViewerTests" */;
+			buildPhases = (
+				A611FC1319225EBF008E0ABD /* Sources */,
+				A611FC1419225EBF008E0ABD /* Frameworks */,
+				A611FC1519225EBF008E0ABD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A611FC1C19225EBF008E0ABD /* PBXTargetDependency */,
+			);
+			name = "Comedy Lab Dataset ViewerTests";
+			productName = "Comedy Lab Dataset ViewerTests";
+			productReference = A611FC1719225EBF008E0ABD /* Comedy Lab Dataset ViewerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A611FBEB19225EBE008E0ABD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = TBZ;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Cognitive Science Group, Queen Mary University of London";
+				TargetAttributes = {
+					A611FC1619225EBF008E0ABD = {
+						TestTargetID = A611FBF219225EBE008E0ABD;
+					};
+				};
+			};
+			buildConfigurationList = A611FBEE19225EBE008E0ABD /* Build configuration list for PBXProject "Comedy Lab Dataset Viewer" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A611FBEA19225EBE008E0ABD;
+			productRefGroup = A611FBF419225EBE008E0ABD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A611FBF219225EBE008E0ABD /* Comedy Lab Dataset Viewer */,
+				A611FC1619225EBF008E0ABD /* Comedy Lab Dataset ViewerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A611FBF119225EBE008E0ABD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A611FC0D19225EBE008E0ABD /* TBZDocument.xib in Resources */,
+				A611FC1219225EBE008E0ABD /* Images.xcassets in Resources */,
+				A611FC0119225EBE008E0ABD /* InfoPlist.strings in Resources */,
+				A611FC0719225EBE008E0ABD /* Credits.rtf in Resources */,
+				A611FC1019225EBE008E0ABD /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A611FC1519225EBF008E0ABD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A611FC2219225EBF008E0ABD /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A611FBEF19225EBE008E0ABD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A611FC0319225EBE008E0ABD /* main.m in Sources */,
+				A611FC0A19225EBE008E0ABD /* TBZDocument.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A611FC1319225EBF008E0ABD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A611FC2419225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A611FC1C19225EBF008E0ABD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A611FBF219225EBE008E0ABD /* Comedy Lab Dataset Viewer */;
+			targetProxy = A611FC1B19225EBF008E0ABD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		A611FBFF19225EBE008E0ABD /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A611FC0019225EBE008E0ABD /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		A611FC0519225EBE008E0ABD /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A611FC0619225EBE008E0ABD /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		A611FC0B19225EBE008E0ABD /* TBZDocument.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A611FC0C19225EBE008E0ABD /* Base */,
+			);
+			name = TBZDocument.xib;
+			sourceTree = "<group>";
+		};
+		A611FC0E19225EBE008E0ABD /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A611FC0F19225EBE008E0ABD /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		A611FC2019225EBF008E0ABD /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A611FC2119225EBF008E0ABD /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		A611FC2519225EBF008E0ABD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A611FC2619225EBF008E0ABD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		A611FC2819225EBF008E0ABD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Comedy Lab Dataset Viewer/Comedy Lab Dataset Viewer-Prefix.pch";
+				INFOPLIST_FILE = "Comedy Lab Dataset Viewer/Comedy Lab Dataset Viewer-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		A611FC2919225EBF008E0ABD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Comedy Lab Dataset Viewer/Comedy Lab Dataset Viewer-Prefix.pch";
+				INFOPLIST_FILE = "Comedy Lab Dataset Viewer/Comedy Lab Dataset Viewer-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		A611FC2B19225EBF008E0ABD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Comedy Lab Dataset Viewer.app/Contents/MacOS/Comedy Lab Dataset Viewer";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Comedy Lab Dataset Viewer/Comedy Lab Dataset Viewer-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Comedy Lab Dataset ViewerTests/Comedy Lab Dataset ViewerTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		A611FC2C19225EBF008E0ABD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Comedy Lab Dataset Viewer.app/Contents/MacOS/Comedy Lab Dataset Viewer";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Comedy Lab Dataset Viewer/Comedy Lab Dataset Viewer-Prefix.pch";
+				INFOPLIST_FILE = "Comedy Lab Dataset ViewerTests/Comedy Lab Dataset ViewerTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A611FBEE19225EBE008E0ABD /* Build configuration list for PBXProject "Comedy Lab Dataset Viewer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A611FC2519225EBF008E0ABD /* Debug */,
+				A611FC2619225EBF008E0ABD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A611FC2719225EBF008E0ABD /* Build configuration list for PBXNativeTarget "Comedy Lab Dataset Viewer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A611FC2819225EBF008E0ABD /* Debug */,
+				A611FC2919225EBF008E0ABD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		A611FC2A19225EBF008E0ABD /* Build configuration list for PBXNativeTarget "Comedy Lab Dataset ViewerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A611FC2B19225EBF008E0ABD /* Debug */,
+				A611FC2C19225EBF008E0ABD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A611FBEB19225EBE008E0ABD /* Project object */;
+}
