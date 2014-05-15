@@ -90,12 +90,29 @@
     [self.freeSceneLayer setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Orthographic" recursively:NO]];
     [self.freeSceneLayer setAutoenablesDefaultLighting:YES];
     
+    // AVPlayer, CAAnimation and AVSynchronizedLayer test
+    
+    CALayer *redLine = [CALayer layer];
+    redLine.backgroundColor = [[NSColor redColor] CGColor];
+    redLine.frame = CGRectMake(self.superLayer.frame.origin.x, self.superLayer.frame.origin.y, 3, self.superLayer.frame.size.height);
+    
+    CABasicAnimation *redLineMove;
+    redLineMove=[CABasicAnimation animationWithKeyPath:@"transform.translation.x"];
+    redLineMove.duration=1430;
+    redLineMove.fromValue=[NSNumber numberWithFloat:self.superLayer.frame.origin.x];
+    redLineMove.removedOnCompletion = NO;
+    redLineMove.toValue=[NSNumber numberWithFloat:self.superLayer.frame.origin.x + self.superLayer.frame.size.width];
+    redLineMove.beginTime = AVCoreAnimationBeginTimeAtZero;
+    
+    [redLine addAnimation:redLineMove forKey:@"redLineMove"];
+    
     // TASK: Set layers into tree
     
     // FIXME: WHYBUGGERMAN I can't get AVPlayer and CAAnimation (SceneKitAdditions) to sync via AVSynchronizedLayer
     [syncLayer addSublayer:self.audienceSceneLayer];
     [syncLayer addSublayer:self.performerSceneLayer];
     [syncLayer addSublayer:self.freeSceneLayer];
+    [syncLayer addSublayer:redLine];
     [self.superLayer addSublayer:syncLayer];
     
     [self.debugView setScene:self.scene];
