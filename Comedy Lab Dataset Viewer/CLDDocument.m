@@ -12,7 +12,7 @@
 @interface CLDDocument ()
 
 @property (weak)   CALayer          *superLayer;
-@property (strong) AVPlayerLayer    *playerLayer;
+@property (strong) AVPlayerView     *playerView;
 @property (strong) SCNLayer         *audienceSceneLayer;
 @property (strong) SCNLayer         *performerSceneLayer;
 @property (strong) SCNLayer         *freeSceneLayer;
@@ -50,6 +50,13 @@
     NSURL *movieURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Video/Performance 1 3pm Live 720P.mov"];
     AVPlayer *player = [AVPlayer playerWithURL: movieURL];
     
+    // Use AVPlayerView rather than AVPlayerLayer as this gives us UI
+    self.playerView = [[AVPlayerView alloc] initWithFrame:aController.window.frame];
+    self.playerView.player = player;
+    self.playerView.controlsStyle = AVPlayerViewControlsStyleInline;
+    
+    [aController.window.contentView addSubview:self.playerView];
+    
     // TASK: Setup container layer and sync layer
     // Set delegate so we can handle laying out sublayers
     
@@ -67,8 +74,6 @@
     [self setScene:[CLDScene sceneWithComedyLabMocapURL:csvURL error:nil]];
     
     // TASK: Setup individual layers
-    
-    [self setPlayerLayer:[AVPlayerLayer playerLayerWithPlayer:player]];
     
     [self setAudienceSceneLayer:[SCNLayer layer]];
     [self.audienceSceneLayer setScene:self.scene];
@@ -91,7 +96,6 @@
     [syncLayer addSublayer:self.audienceSceneLayer];
     [syncLayer addSublayer:self.performerSceneLayer];
     [syncLayer addSublayer:self.freeSceneLayer];
-    [self.superLayer addSublayer:self.playerLayer];
     [self.superLayer addSublayer:syncLayer];
     
     [self.debugView setScene:self.scene];
@@ -144,7 +148,8 @@
         CGFloat videoTopAlign = layerRect.origin.y + layerRect.size.height - videoFittedHeight;
         CGRect videoRect = CGRectMake(layerRect.origin.x, videoTopAlign, videoFittedWidth, videoFittedHeight);
         
-        [self.playerLayer setFrame:videoRect];
+        // This is a view not layer, but no-need to reinvent the wheel since switching from AVPlayerLayer to AVPlayerView.
+        [self.playerView setFrame:videoRect];
         
         CGRect audienceRect = CGRectMake(videoRect.origin.x + videoRect.size.width/2.0, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
         [self.audienceSceneLayer setFrame:audienceRect];
