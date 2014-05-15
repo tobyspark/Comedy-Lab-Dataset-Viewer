@@ -64,15 +64,22 @@
     
     self.superLayer = [aController.window.contentView layer];
     self.superLayer.delegate = self;
-    AVSynchronizedLayer *syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:player.currentItem];
+    
+    // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+    // AVSynchronizedLayer *syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:player.currentItem];
+    [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
+        NSTimeInterval timeSecs = CMTimeGetSeconds(time);
+        [self.audienceSceneLayer setCurrentTime:timeSecs];
+        [self.performerSceneLayer setCurrentTime:timeSecs];
+        [self.freeSceneLayer setCurrentTime:timeSecs];
+    }];
     
     // TASK: Get our 3D scene
     // Generate from CSV exported from Vicon in first instance
     // The scene could then be saved and loaded from a file bundle
     
-    //NSURL *csvURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Motion Capture/TUESDAY 3pm 123.csv"];
-    //[self setScene:[CLDScene sceneWithComedyLabMocapURL:csvURL error:nil]];
-    [self setScene:[CLDScene syncDebugScene]];
+    NSURL *csvURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Motion Capture/TUESDAY 3pm 123.csv"];
+    [self setScene:[CLDScene sceneWithComedyLabMocapURL:csvURL error:nil]];
     
     // TASK: Setup individual layers
     
@@ -91,30 +98,17 @@
     [self.freeSceneLayer setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Orthographic" recursively:NO]];
     [self.freeSceneLayer setAutoenablesDefaultLighting:YES];
     
-    // AVPlayer, CAAnimation and AVSynchronizedLayer test
-    
-    CALayer *redLine = [CALayer layer];
-    redLine.backgroundColor = [[NSColor redColor] CGColor];
-    redLine.frame = CGRectMake(self.superLayer.frame.origin.x, self.superLayer.frame.origin.y, 3, self.superLayer.frame.size.height);
-    
-    CABasicAnimation *redLineMove;
-    redLineMove=[CABasicAnimation animationWithKeyPath:@"transform.translation.x"];
-    redLineMove.duration=1430;
-    redLineMove.fromValue=[NSNumber numberWithFloat:self.superLayer.frame.origin.x];
-    redLineMove.removedOnCompletion = NO;
-    redLineMove.toValue=[NSNumber numberWithFloat:self.superLayer.frame.origin.x + self.superLayer.frame.size.width];
-    redLineMove.beginTime = AVCoreAnimationBeginTimeAtZero;
-    
-    [redLine addAnimation:redLineMove forKey:@"redLineMove"];
-    
     // TASK: Set layers into tree
     
-    // FIXME: WHYBUGGERMAN I can't get AVPlayer and CAAnimation (SceneKitAdditions) to sync via AVSynchronizedLayer
-    [syncLayer addSublayer:self.audienceSceneLayer];
-    [syncLayer addSublayer:self.performerSceneLayer];
-    [syncLayer addSublayer:self.freeSceneLayer];
-    [syncLayer addSublayer:redLine];
-    [self.superLayer addSublayer:syncLayer];
+    // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+    // [syncLayer addSublayer:self.audienceSceneLayer];
+    // [syncLayer addSublayer:self.performerSceneLayer];
+    // [syncLayer addSublayer:self.freeSceneLayer];
+    // [syncLayer addSublayer:redLine];
+    // [self.superLayer addSublayer:syncLayer];
+    [self.superLayer addSublayer:self.audienceSceneLayer];
+    [self.superLayer addSublayer:self.performerSceneLayer];
+    [self.superLayer addSublayer:self.freeSceneLayer];
     
     [self.debugView setScene:self.scene];
     [self.debugView setShowsStatistics:YES];

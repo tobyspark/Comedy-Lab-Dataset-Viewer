@@ -206,106 +206,30 @@
             [subjectNode setName:columnHeader];
             [subjectNode addChildNode:[CLDScene arrow]];
             
-            SCNVector3 pos = [subjectPositionArray[i][0] SCNVector3Value];
-            [subjectNode setPosition:pos];
-            NSLog(@"Setting %@ to %f %f %f", subjectNode.name, pos.x, pos.y, pos.z);
-            
             CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
             positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
             positionAnimation.duration = finalTime;
             positionAnimation.removedOnCompletion = NO;
             positionAnimation.keyTimes = timeArray;
+            positionAnimation.calculationMode = kCAAnimationDiscrete;
             positionAnimation.values = subjectPositionArray[i];
+            positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
             [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
             
             // Not added until a) position animation working and b) rotation is fixed from euler to angle-axis
             CAKeyframeAnimation *rotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
             rotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
             rotationAnimation.duration = finalTime;
-            positionAnimation.removedOnCompletion = NO;
+            rotationAnimation.removedOnCompletion = NO;
             rotationAnimation.keyTimes = timeArray;
+            rotationAnimation.calculationMode = kCAAnimationDiscrete;
             rotationAnimation.values = subjectRotationArray[i];
+            rotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
             //[subjectNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
             
             [scene.rootNode addChildNode:subjectNode];
         }
     }
-    
-    return scene;
-}
-
-+ (SCNScene *) syncDebugScene
-{
-    // An empty scene
-    SCNScene *scene = [SCNScene scene];
-    
-    // A camera
-    SCNNode *cameraNode = [SCNNode node];
-    cameraNode.camera = [SCNCamera camera];
-    cameraNode.position = SCNVector3Make(0, 15, 30);
-    cameraNode.transform = CATransform3DRotate(cameraNode.transform,
-                                               -M_PI/7.0,
-                                               1, 0, 0);
-    
-    [scene.rootNode addChildNode:cameraNode];
-    
-    // A spotlight
-    SCNLight *spotLight = [SCNLight light];
-    spotLight.type = SCNLightTypeSpot;
-    spotLight.color = [NSColor redColor];
-    SCNNode *spotLightNode = [SCNNode node];
-    spotLightNode.light = spotLight;
-    spotLightNode.position = SCNVector3Make(-2, 1, 0);
-    
-    [cameraNode addChildNode:spotLightNode];
-    
-    // A square box
-    CGFloat boxSide = 15.0;
-    SCNBox *box = [SCNBox boxWithWidth:boxSide
-                                height:boxSide
-                                length:boxSide
-                         chamferRadius:0];
-    SCNNode *boxNode = [SCNNode nodeWithGeometry:box];
-    boxNode.transform = CATransform3DMakeRotation(M_PI_2/3, 0, 1, 0);
-    
-    [scene.rootNode addChildNode:boxNode];
-    
-    // Changing the color of the spotlight
-    CAKeyframeAnimation *spotColor =
-    [CAKeyframeAnimation animationWithKeyPath:@"color"];
-    spotColor.values = @[(id)[NSColor redColor],
-                         (id)[NSColor blueColor],
-                         (id)[NSColor greenColor],
-                         (id)[NSColor redColor]];
-    spotColor.keyTimes = @[@0, @0.3, @0.7, @1];
-    
-    // EITHER THIS - ANIMATE WITH KEYTIMES
-//    spotColor.beginTime = AVCoreAnimationBeginTimeAtZero;
-//    spotColor.duration = 1413;
-//    spotColor.removedOnCompletion = NO;
-    
-    // OR THIS - ANIMATE AS LOOP
-    spotColor.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-    spotColor.repeatCount = INFINITY;
-    spotColor.duration = 3.0;
-    
-    [spotLight addAnimation:spotColor
-                     forKey:@"ChangeTheColorOfTheSpot"];
-    
-    // Rotating the box
-    CABasicAnimation *boxRotation =
-    [CABasicAnimation animationWithKeyPath:@"transform"];
-    boxRotation.toValue =
-    [NSValue valueWithCATransform3D:CATransform3DRotate(boxNode.transform,
-                                                        M_PI,
-                                                        1, 1, 0)];
-    boxRotation.timingFunction =
-    [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-    boxRotation.repeatCount = INFINITY;
-    boxRotation.duration = 2.0;
-    boxRotation.usesSceneTimeBase = NO;
-    [boxNode addAnimation:boxRotation
-                   forKey:@"RotateTheBox"];
     
     return scene;
 }

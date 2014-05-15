@@ -14,6 +14,4 @@
 
 + (SCNScene *)sceneWithComedyLabMocapURL:(NSURL *)url error:(NSError **)error;
 
-+ (SCNScene *) syncDebugScene;
-
 @end
