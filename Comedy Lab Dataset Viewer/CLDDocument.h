@@ -1,5 +1,5 @@
 //
-//  main.m
+//  TBZDocument.h
 //  Comedy Lab Dataset Viewer
 //
 //  Created by Toby Harris | http://tobyz.net on 13/05/2014.
@@ -7,8 +7,12 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <SceneKit/SceneKit.h>
+#import <AVFoundation/AVFoundation.h>
+#import <AVKit/AVKit.h>
 
-int main(int argc, const char * argv[])
-{
-    return NSApplicationMain(argc, argv);
-}
+@interface CLDDocument : NSDocument
+
+@property (weak) IBOutlet SCNView* debugView;
+
+@end

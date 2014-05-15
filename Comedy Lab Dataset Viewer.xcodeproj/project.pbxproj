@@ -11,14 +11,19 @@
 		A611FC0119225EBE008E0ABD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A611FBFF19225EBE008E0ABD /* InfoPlist.strings */; };
 		A611FC0319225EBE008E0ABD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC0219225EBE008E0ABD /* main.m */; };
 		A611FC0719225EBE008E0ABD /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = A611FC0519225EBE008E0ABD /* Credits.rtf */; };
-		A611FC0A19225EBE008E0ABD /* TBZDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC0919225EBE008E0ABD /* TBZDocument.m */; };
-		A611FC0D19225EBE008E0ABD /* TBZDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = A611FC0B19225EBE008E0ABD /* TBZDocument.xib */; };
+		A611FC0A19225EBE008E0ABD /* CLDDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC0919225EBE008E0ABD /* CLDDocument.m */; };
+		A611FC0D19225EBE008E0ABD /* CLDDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = A611FC0B19225EBE008E0ABD /* CLDDocument.xib */; };
 		A611FC1019225EBE008E0ABD /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = A611FC0E19225EBE008E0ABD /* MainMenu.xib */; };
 		A611FC1219225EBE008E0ABD /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A611FC1119225EBE008E0ABD /* Images.xcassets */; };
 		A611FC1919225EBF008E0ABD /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC1819225EBF008E0ABD /* XCTest.framework */; };
 		A611FC1A19225EBF008E0ABD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FBF619225EBE008E0ABD /* Cocoa.framework */; };
 		A611FC2219225EBF008E0ABD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A611FC2019225EBF008E0ABD /* InfoPlist.strings */; };
 		A611FC2419225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC2319225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m */; };
+		A611FC2E192268DD008E0ABD /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC2D192268DD008E0ABD /* QuartzCore.framework */; };
+		A611FC30192268E6008E0ABD /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC2F192268E6008E0ABD /* SceneKit.framework */; };
+		A611FC34192269A9008E0ABD /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC33192269A9008E0ABD /* AVKit.framework */; };
+		A611FC3519227066008E0ABD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC3119226938008E0ABD /* AVFoundation.framework */; };
+		A611FC3E1922E144008E0ABD /* CLDScene.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC3D1922E144008E0ABD /* CLDScene.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,9 +47,9 @@
 		A611FC0219225EBE008E0ABD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A611FC0419225EBE008E0ABD /* Comedy Lab Dataset Viewer-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Comedy Lab Dataset Viewer-Prefix.pch"; sourceTree = "<group>"; };
 		A611FC0619225EBE008E0ABD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
-		A611FC0819225EBE008E0ABD /* TBZDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TBZDocument.h; sourceTree = "<group>"; };
-		A611FC0919225EBE008E0ABD /* TBZDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TBZDocument.m; sourceTree = "<group>"; };
-		A611FC0C19225EBE008E0ABD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/TBZDocument.xib; sourceTree = "<group>"; };
+		A611FC0819225EBE008E0ABD /* CLDDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CLDDocument.h; sourceTree = "<group>"; };
+		A611FC0919225EBE008E0ABD /* CLDDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CLDDocument.m; sourceTree = "<group>"; };
+		A611FC0C19225EBE008E0ABD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/CLDDocument.xib; sourceTree = "<group>"; };
 		A611FC0F19225EBE008E0ABD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		A611FC1119225EBE008E0ABD /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		A611FC1719225EBF008E0ABD /* Comedy Lab Dataset ViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Comedy Lab Dataset ViewerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +57,12 @@
 		A611FC1F19225EBF008E0ABD /* Comedy Lab Dataset ViewerTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Comedy Lab Dataset ViewerTests-Info.plist"; sourceTree = "<group>"; };
 		A611FC2119225EBF008E0ABD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		A611FC2319225EBF008E0ABD /* Comedy_Lab_Dataset_ViewerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Comedy_Lab_Dataset_ViewerTests.m; sourceTree = "<group>"; };
+		A611FC2D192268DD008E0ABD /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		A611FC2F192268E6008E0ABD /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
+		A611FC3119226938008E0ABD /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		A611FC33192269A9008E0ABD /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
+		A611FC3C1922E144008E0ABD /* CLDScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLDScene.h; sourceTree = "<group>"; };
+		A611FC3D1922E144008E0ABD /* CLDScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLDScene.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +70,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A611FC34192269A9008E0ABD /* AVKit.framework in Frameworks */,
+				A611FC3519227066008E0ABD /* AVFoundation.framework in Frameworks */,
+				A611FC30192268E6008E0ABD /* SceneKit.framework in Frameworks */,
+				A611FC2E192268DD008E0ABD /* QuartzCore.framework in Frameworks */,
 				A611FBF719225EBE008E0ABD /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -97,6 +112,10 @@
 		A611FBF519225EBE008E0ABD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A611FC33192269A9008E0ABD /* AVKit.framework */,
+				A611FC3119226938008E0ABD /* AVFoundation.framework */,
+				A611FC2F192268E6008E0ABD /* SceneKit.framework */,
+				A611FC2D192268DD008E0ABD /* QuartzCore.framework */,
 				A611FBF619225EBE008E0ABD /* Cocoa.framework */,
 				A611FC1819225EBF008E0ABD /* XCTest.framework */,
 				A611FBF819225EBE008E0ABD /* Other Frameworks */,
@@ -117,9 +136,11 @@
 		A611FBFC19225EBE008E0ABD /* Comedy Lab Dataset Viewer */ = {
 			isa = PBXGroup;
 			children = (
-				A611FC0819225EBE008E0ABD /* TBZDocument.h */,
-				A611FC0919225EBE008E0ABD /* TBZDocument.m */,
-				A611FC0B19225EBE008E0ABD /* TBZDocument.xib */,
+				A611FC0819225EBE008E0ABD /* CLDDocument.h */,
+				A611FC0919225EBE008E0ABD /* CLDDocument.m */,
+				A611FC3C1922E144008E0ABD /* CLDScene.h */,
+				A611FC3D1922E144008E0ABD /* CLDScene.m */,
+				A611FC0B19225EBE008E0ABD /* CLDDocument.xib */,
 				A611FC0E19225EBE008E0ABD /* MainMenu.xib */,
 				A611FC1119225EBE008E0ABD /* Images.xcassets */,
 				A611FBFD19225EBE008E0ABD /* Supporting Files */,
@@ -234,7 +255,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A611FC0D19225EBE008E0ABD /* TBZDocument.xib in Resources */,
+				A611FC0D19225EBE008E0ABD /* CLDDocument.xib in Resources */,
 				A611FC1219225EBE008E0ABD /* Images.xcassets in Resources */,
 				A611FC0119225EBE008E0ABD /* InfoPlist.strings in Resources */,
 				A611FC0719225EBE008E0ABD /* Credits.rtf in Resources */,
@@ -258,7 +279,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A611FC0319225EBE008E0ABD /* main.m in Sources */,
-				A611FC0A19225EBE008E0ABD /* TBZDocument.m in Sources */,
+				A611FC0A19225EBE008E0ABD /* CLDDocument.m in Sources */,
+				A611FC3E1922E144008E0ABD /* CLDScene.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,12 +319,12 @@
 			name = Credits.rtf;
 			sourceTree = "<group>";
 		};
-		A611FC0B19225EBE008E0ABD /* TBZDocument.xib */ = {
+		A611FC0B19225EBE008E0ABD /* CLDDocument.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				A611FC0C19225EBE008E0ABD /* Base */,
 			);
-			name = TBZDocument.xib;
+			name = CLDDocument.xib;
 			sourceTree = "<group>";
 		};
 		A611FC0E19225EBE008E0ABD /* MainMenu.xib */ = {

@@ -2,7 +2,7 @@
 //  Comedy_Lab_Dataset_ViewerTests.m
 //  Comedy Lab Dataset ViewerTests
 //
-//  Created by TBZ.PhD on 13/05/2014.
+//  Created by Toby Harris | http://tobyz.net on 13/05/2014.
 //  Copyright (c) 2014 Cognitive Science Group, Queen Mary University of London. All rights reserved.
 //
 
