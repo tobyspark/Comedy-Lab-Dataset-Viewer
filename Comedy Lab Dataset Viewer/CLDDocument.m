@@ -149,6 +149,8 @@
     // TASK: Fit the video to the top of the window and lay out two camera views of the 3D scene on top of their corresponding video regions, and put the freeview 3D scene in the remaining space below.
     if (layer == self.superLayer)
     {
+        [[NSAnimationContext currentContext] setDuration:0];
+        
         CGRect layerRect = self.superLayer.bounds;
         //NSLog(@"layerRect %f, %f, %f, %f", layerRect.origin.x, layerRect.origin.y, layerRect.size.width, layerRect.size.height);
         
