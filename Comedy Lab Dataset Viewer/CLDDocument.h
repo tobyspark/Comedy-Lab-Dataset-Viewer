@@ -13,6 +13,4 @@
 
 @interface CLDDocument : NSDocument
 
-@property (weak) IBOutlet SCNView* debugView;
-
 @end

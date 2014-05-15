@@ -110,9 +110,6 @@
     [self.superLayer addSublayer:self.performerSceneLayer];
     [self.superLayer addSublayer:self.freeSceneLayer];
     
-    [self.debugView setScene:self.scene];
-    [self.debugView setShowsStatistics:YES];
-    
     [player setMuted:YES]; // for development sanity
     [player seekToTime:CMTimeMakeWithSeconds(464, 600)];
     [player play];
