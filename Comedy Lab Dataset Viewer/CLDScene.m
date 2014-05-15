@@ -234,4 +234,80 @@
     return scene;
 }
 
++ (SCNScene *) syncDebugScene
+{
+    // An empty scene
+    SCNScene *scene = [SCNScene scene];
+    
+    // A camera
+    SCNNode *cameraNode = [SCNNode node];
+    cameraNode.camera = [SCNCamera camera];
+    cameraNode.position = SCNVector3Make(0, 15, 30);
+    cameraNode.transform = CATransform3DRotate(cameraNode.transform,
+                                               -M_PI/7.0,
+                                               1, 0, 0);
+    
+    [scene.rootNode addChildNode:cameraNode];
+    
+    // A spotlight
+    SCNLight *spotLight = [SCNLight light];
+    spotLight.type = SCNLightTypeSpot;
+    spotLight.color = [NSColor redColor];
+    SCNNode *spotLightNode = [SCNNode node];
+    spotLightNode.light = spotLight;
+    spotLightNode.position = SCNVector3Make(-2, 1, 0);
+    
+    [cameraNode addChildNode:spotLightNode];
+    
+    // A square box
+    CGFloat boxSide = 15.0;
+    SCNBox *box = [SCNBox boxWithWidth:boxSide
+                                height:boxSide
+                                length:boxSide
+                         chamferRadius:0];
+    SCNNode *boxNode = [SCNNode nodeWithGeometry:box];
+    boxNode.transform = CATransform3DMakeRotation(M_PI_2/3, 0, 1, 0);
+    
+    [scene.rootNode addChildNode:boxNode];
+    
+    // Changing the color of the spotlight
+    CAKeyframeAnimation *spotColor =
+    [CAKeyframeAnimation animationWithKeyPath:@"color"];
+    spotColor.values = @[(id)[NSColor redColor],
+                         (id)[NSColor blueColor],
+                         (id)[NSColor greenColor],
+                         (id)[NSColor redColor]];
+    spotColor.keyTimes = @[@0, @0.3, @0.7, @1];
+    
+    // EITHER THIS - ANIMATE WITH KEYTIMES
+//    spotColor.beginTime = AVCoreAnimationBeginTimeAtZero;
+//    spotColor.duration = 1413;
+//    spotColor.removedOnCompletion = NO;
+    
+    // OR THIS - ANIMATE AS LOOP
+    spotColor.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    spotColor.repeatCount = INFINITY;
+    spotColor.duration = 3.0;
+    
+    [spotLight addAnimation:spotColor
+                     forKey:@"ChangeTheColorOfTheSpot"];
+    
+    // Rotating the box
+    CABasicAnimation *boxRotation =
+    [CABasicAnimation animationWithKeyPath:@"transform"];
+    boxRotation.toValue =
+    [NSValue valueWithCATransform3D:CATransform3DRotate(boxNode.transform,
+                                                        M_PI,
+                                                        1, 1, 0)];
+    boxRotation.timingFunction =
+    [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    boxRotation.repeatCount = INFINITY;
+    boxRotation.duration = 2.0;
+    boxRotation.usesSceneTimeBase = NO;
+    [boxNode addAnimation:boxRotation
+                   forKey:@"RotateTheBox"];
+    
+    return scene;
+}
+
 @end

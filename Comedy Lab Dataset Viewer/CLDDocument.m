@@ -70,8 +70,9 @@
     // Generate from CSV exported from Vicon in first instance
     // The scene could then be saved and loaded from a file bundle
     
-    NSURL *csvURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Motion Capture/TUESDAY 3pm 123.csv"];
-    [self setScene:[CLDScene sceneWithComedyLabMocapURL:csvURL error:nil]];
+    //NSURL *csvURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Motion Capture/TUESDAY 3pm 123.csv"];
+    //[self setScene:[CLDScene sceneWithComedyLabMocapURL:csvURL error:nil]];
+    [self setScene:[CLDScene syncDebugScene]];
     
     // TASK: Setup individual layers
     
