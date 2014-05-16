@@ -10,6 +10,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
+#import "linmath.h"
 
 #define kCLDdatumPerSubject 6
 
@@ -134,8 +135,25 @@
                 {
                     subjectPositionArray[subject][i] = [NSValue valueWithSCNVector3:SCNVector3Make(data[0], data[1], data[2])];
                     
-                    // FIXME: Euler to Angle-Axis, this is placeholder
-                    subjectRotationArray[subject][i] = [NSValue valueWithSCNVector4:SCNVector4Make(data[3], data[4], data[5], M_PI_2)];
+                    // Gaze direction vector is [gx, gy, gz], ie. data[3,4,5]
+                    // Arrows have direction vector [0, 1, 0] ie. SCNCylinder draws up y-axis)
+                    // Need angle-axis rotation from [0,1,0] to [gx, gy, gz]
+                    
+                    vec3 startVec = {0, 1, 0};
+                    vec3 endVecBeforeNorm = {data[3], data[4], data[5]};
+                    vec3 endVec;
+                    vec3_norm(endVec, endVecBeforeNorm);
+                    
+                    // Cross-product gives axis of rotation
+                    vec3 axis, normAxis;
+                    vec3_mul_cross(axis, startVec, endVec);
+                    vec3_norm(normAxis, axis);
+                    
+                    // acos of dot-product gives angle of rotation
+                    float dot = vec3_mul_inner(startVec, endVec);
+                    float angle = acosf(dot);
+                    
+                    subjectRotationArray[subject][i] = [NSValue valueWithSCNVector4:SCNVector4Make(normAxis[0], normAxis[1], normAxis[2], angle)];
                     
                     dataColumn = 0;
                     subject++;
@@ -216,7 +234,6 @@
             positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
             [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
             
-            // Not added until a) position animation working and b) rotation is fixed from euler to angle-axis
             CAKeyframeAnimation *rotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
             rotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
             rotationAnimation.duration = finalTime;
@@ -225,7 +242,7 @@
             rotationAnimation.calculationMode = kCAAnimationDiscrete;
             rotationAnimation.values = subjectRotationArray[i];
             rotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-            //[subjectNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
+            [subjectNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
             
             [scene.rootNode addChildNode:subjectNode];
         }
