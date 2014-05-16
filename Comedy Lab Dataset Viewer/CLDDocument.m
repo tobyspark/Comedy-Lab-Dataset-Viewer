@@ -15,7 +15,7 @@
 @property (strong) AVPlayerView     *playerView;
 @property (strong) SCNLayer         *audienceSceneLayer;
 @property (strong) SCNLayer         *performerSceneLayer;
-@property (strong) SCNLayer         *freeSceneLayer;
+@property (strong) SCNView          *freeSceneView;
 
 @property (strong) SCNScene*        scene;
 
@@ -50,36 +50,39 @@
     NSURL *movieURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Video/Performance 1 3pm Live 720P.mov"];
     AVPlayer *player = [AVPlayer playerWithURL: movieURL];
     
-    // Use AVPlayerView rather than AVPlayerLayer as this gives us UI
-    self.playerView = [[AVPlayerView alloc] initWithFrame:aController.window.frame];
-    self.playerView.player = player;
-    self.playerView.controlsStyle = AVPlayerViewControlsStyleInline;
-    
-    [aController.window.contentView addSubview:self.playerView];
-    
-    // TASK: Setup container layer and sync layer
-    // Set delegate so we can handle laying out sublayers
-    
-    [aController.window.contentView setWantsLayer:YES];
-    
-    self.superLayer = [aController.window.contentView layer];
-    self.superLayer.delegate = self;
-    
-    // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-    // AVSynchronizedLayer *syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:player.currentItem];
-    [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
-        NSTimeInterval timeSecs = CMTimeGetSeconds(time);
-        [self.audienceSceneLayer setCurrentTime:timeSecs];
-        [self.performerSceneLayer setCurrentTime:timeSecs];
-        [self.freeSceneLayer setCurrentTime:timeSecs];
-    }];
-    
     // TASK: Get our 3D scene
     // Generate from CSV exported from Vicon in first instance
     // The scene could then be saved and loaded from a file bundle
     
     NSURL *csvURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Motion Capture/TUESDAY 3pm 123.csv"];
     [self setScene:[CLDScene sceneWithComedyLabMocapURL:csvURL error:nil]];
+    
+    // TASK: Create Views and Layers
+    
+    [aController.window.contentView setWantsLayer:YES];
+    
+    [self setSuperLayer:[aController.window.contentView layer]];
+    
+    // Set delegate so we can handle laying out sublayers, and do the views while we're at it
+    [self.superLayer setDelegate:self];
+    
+    // TASK: Setup views
+    
+    // Use AVPlayerView rather than AVPlayerLayer as this gives us UI
+    [self setPlayerView:[[AVPlayerView alloc] initWithFrame:aController.window.frame]];
+    [self.playerView setPlayer:player];
+    [self.playerView setControlsStyle:AVPlayerViewControlsStyleInline];
+    
+    [aController.window.contentView addSubview:self.playerView];
+    
+    // Use SCNView rather than layer as this gives us UI, and we can now keep in sync using AVPlayer's periodicTimeObserver rather than the broken elegance of AVSyncronizedLayer
+    [self setFreeSceneView:[[SCNView alloc] initWithFrame:aController.window.frame]];
+    [self.freeSceneView setScene:self.scene];
+    [self.freeSceneView setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Orthographic" recursively:NO]];
+    [self.freeSceneView setAutoenablesDefaultLighting:YES];
+    [self.freeSceneView setAllowsCameraControl:YES];
+    
+    [aController.window.contentView addSubview:self.freeSceneView];
     
     // TASK: Setup individual layers
     
@@ -93,22 +96,20 @@
     [self.performerSceneLayer setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Performer" recursively:NO]];
     [self.performerSceneLayer setAutoenablesDefaultLighting:YES];
     
-    [self setFreeSceneLayer:[SCNLayer layer]];
-    [self.freeSceneLayer setScene:self.scene];
-    [self.freeSceneLayer setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Orthographic" recursively:NO]];
-    [self.freeSceneLayer setAutoenablesDefaultLighting:YES];
-    
     // TASK: Set layers into tree
     
-    // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-    // [syncLayer addSublayer:self.audienceSceneLayer];
-    // [syncLayer addSublayer:self.performerSceneLayer];
-    // [syncLayer addSublayer:self.freeSceneLayer];
-    // [syncLayer addSublayer:redLine];
-    // [self.superLayer addSublayer:syncLayer];
     [self.superLayer addSublayer:self.audienceSceneLayer];
     [self.superLayer addSublayer:self.performerSceneLayer];
-    [self.superLayer addSublayer:self.freeSceneLayer];
+    
+    // AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions), see early commits
+    // So we use this instead, which also allows us to make freeScene a SCNView with it's built-in camera UI.
+    [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
+        NSTimeInterval timeSecs = CMTimeGetSeconds(time);
+        [self.audienceSceneLayer setCurrentTime:timeSecs];
+        [self.performerSceneLayer setCurrentTime:timeSecs];
+        [self.freeSceneView setCurrentTime:timeSecs];
+    }];
+    
     
     [player setMuted:YES]; // for development sanity
     [player seekToTime:CMTimeMakeWithSeconds(464, 600)];
@@ -168,8 +169,9 @@
         CGRect performerRect = CGRectMake(videoRect.origin.x, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
         [self.performerSceneLayer setFrame:performerRect];
         
+        // This is a view not layer, but no-need to reinvent the wheel...
         CGRect freeRect = CGRectMake(layerRect.origin.x, layerRect.origin.y, layerRect.size.width, layerRect.size.height - videoRect.size.height);
-        [self.freeSceneLayer setFrame:freeRect];
+        [self.freeSceneView setFrame:freeRect];
     }
 }
 
