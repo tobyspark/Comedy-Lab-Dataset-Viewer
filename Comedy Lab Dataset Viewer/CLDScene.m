@@ -14,6 +14,51 @@
 
 #define kCLDdatumPerSubject 6
 
+static inline void rotationFromVecToVec(vec4 angleAxisVec, vec3 fromVec, vec3 toVec)
+{
+    vec3 startVec = {fromVec[0], fromVec[1], fromVec[2]};
+    vec3 endVecBeforeNorm = {toVec[0], toVec[1], toVec[2]};
+    vec3 endVec;
+    vec3_norm(endVec, endVecBeforeNorm);
+    
+    // Cross-product gives axis of rotation
+    vec3 axis, normAxis;
+    vec3_mul_cross(axis, startVec, endVec);
+    vec3_norm(normAxis, axis);
+    angleAxisVec[0] = normAxis[0];
+    angleAxisVec[1] = normAxis[1];
+    angleAxisVec[2] = normAxis[2];
+    
+    // acos of dot-product gives angle of rotation
+    float dot = vec3_mul_inner(startVec, endVec);
+    angleAxisVec[3] = acosf(dot);
+}
+
+static inline SCNVector4 rotateArrowToVec(float x, float y, float z)
+{
+    // Arrows have direction vector [0, 1, 0] ie. SCNCylinder draws up y-axis)
+    // To point arrow in SceneKit need angle-axis rotation from [0,1,0] to [x, y, z]
+    
+    vec3 arrow = {0, 1, 0};
+    vec3 toVec = {x, y, z};
+    vec4 angleAxis;
+    rotationFromVecToVec(angleAxis, arrow, toVec);
+    
+    return SCNVector4Make(angleAxis[0], angleAxis[1], angleAxis[2], angleAxis[3]);
+}
+
+static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
+{
+    // Camera have direction vector [0, 0, -1] ie. SCNCamera looks along neg z axis
+    
+    vec3 camera = {0, 0, -1};
+    vec3 toVec = {x, y, z};
+    vec4 angleAxis;
+    rotationFromVecToVec(angleAxis, camera, toVec);
+    
+    return SCNVector4Make(angleAxis[0], angleAxis[1], angleAxis[2], angleAxis[3]);
+}
+
 @implementation CLDScene
 
 + (SCNNode *) arrow
@@ -144,23 +189,9 @@
                     
                     // Gaze direction vector is [gx, gy, gz], ie. data[3,4,5]
                     // Arrows have direction vector [0, 1, 0] ie. SCNCylinder draws up y-axis)
-                    // Need angle-axis rotation from [0,1,0] to [gx, gy, gz]
                     
-                    vec3 startVec = {0, 1, 0};
-                    vec3 endVecBeforeNorm = {data[3], data[4], data[5]};
-                    vec3 endVec;
-                    vec3_norm(endVec, endVecBeforeNorm);
                     
-                    // Cross-product gives axis of rotation
-                    vec3 axis, normAxis;
-                    vec3_mul_cross(axis, startVec, endVec);
-                    vec3_norm(normAxis, axis);
-                    
-                    // acos of dot-product gives angle of rotation
-                    float dot = vec3_mul_inner(startVec, endVec);
-                    float angle = acosf(dot);
-                    
-                    subjectRotationArray[subject][i] = [NSValue valueWithSCNVector4:SCNVector4Make(normAxis[0], normAxis[1], normAxis[2], angle)];
+                    subjectRotationArray[subject][i] = [NSValue valueWithSCNVector4:rotateArrowToVec(data[3], data[4], data[5])];
                     
                     dataColumn = 0;
                     subject++;
@@ -187,24 +218,32 @@
         // Add in cameras. Two that were actually in experiment, to align onto video. One to use as a roving eye. Values here are eyeballed.
         
         SCNCamera *audienceCamera = [SCNCamera camera];
-        audienceCamera.automaticallyAdjustsZRange = YES;
+        [audienceCamera setAutomaticallyAdjustsZRange: YES];
+        [audienceCamera setXFov: (180.0*35.0) / (M_PI*39)]; // 35mm equivalent focal length for JVC GY-HM150 at max wide = 39mm
+        
+        CATransform3D audienceTransform = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
+        audienceTransform = CATransform3DRotate(audienceTransform, GLKMathDegreesToRadians(100), 1, 0, 0);
+        audienceTransform = CATransform3DTranslate(audienceTransform, -1000, 0, 3000);
         
         SCNNode *audienceCameraNode = [SCNNode node];
-        audienceCameraNode.name = @"Camera - Audience";
-        audienceCameraNode.position = SCNVector3Make(0, 0, 3000); // a guess for now
-        audienceCameraNode.rotation = SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(30));
+        [audienceCameraNode setName:@"Camera - Audience"];
         [audienceCameraNode setCamera:audienceCamera];
+        [audienceCameraNode setTransform:audienceTransform];
         
         [scene.rootNode addChildNode:audienceCameraNode];
         
         SCNCamera *performerCamera = [SCNCamera camera];
-        performerCamera.automaticallyAdjustsZRange = YES;
+        [performerCamera setAutomaticallyAdjustsZRange:YES];
+        //[performerCamera setXFov:90];
+        
+        CATransform3D performerTransform = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
+        //performerTransform = CATransform3DRotate(performerTransform, GLKMathDegreesToRadians(90), 1, 0, 0);
+        //performerTransform = CATransform3DTranslate(performerTransform, 6000, 0, 2000);
         
         SCNNode *performerCameraNode = [SCNNode node];
-        performerCameraNode.name = @"Camera - Performer";
-        performerCameraNode.position = SCNVector3Make(6000, 0, 2000); // a guess for now
-        performerCameraNode.rotation = SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(30));
+        [performerCameraNode setName:@"Camera - Performer"];
         [performerCameraNode setCamera:performerCamera];
+        [performerCameraNode setTransform:performerTransform];
         
         [scene.rootNode addChildNode:performerCameraNode];
         
@@ -216,7 +255,6 @@
         SCNNode *orthoCameraNode = [SCNNode node];
         orthoCameraNode.name = @"Camera - Orthographic";
         orthoCameraNode.position = SCNVector3Make(2000, 0, 2000); // a guess for now
-        orthoCameraNode.rotation = SCNVector4Make(0, 0, 1, GLKMathDegreesToRadians(90));
         [orthoCameraNode setCamera:orthoCamera];
         
         [scene.rootNode addChildNode:orthoCameraNode];
@@ -255,6 +293,22 @@
             
             [scene.rootNode addChildNode:subjectNode];
         }
+        
+        // Add in floor, as a visual cue for setting camera
+        SCNNode *floor = [SCNNode nodeWithGeometry:[SCNPlane planeWithWidth:6000 height:4000]];
+        floor.position = SCNVector3Make(3000, 0, 0);
+        [scene.rootNode addChildNode:floor];
+        
+        // Add in a light.
+        // Use diffuse rather than spot as we want to see the arrows, but set it approx where spotlight is so arrows light vaugely as per scene.
+        SCNLight *light = [SCNLight light];
+        light.type = SCNLightTypeOmni;
+        SCNNode *lightNode = [SCNNode node];
+        lightNode.position = SCNVector3Make(-1000, 0, 4000);
+        [lightNode setLight:light];
+        [scene.rootNode addChildNode:lightNode];
+        
+        
     }
     
     return scene;
