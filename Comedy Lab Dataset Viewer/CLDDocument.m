@@ -17,7 +17,7 @@
 @property (strong) SCNLayer         *performerSceneLayer;
 @property (strong) SCNView          *freeSceneView;
 
-@property (strong) SCNScene*        scene;
+@property (strong) CLDScene*        scene;
 
 @end
 
@@ -95,7 +95,7 @@
     [self.performerSceneLayer setScene:self.scene];
     [self.performerSceneLayer setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Performer" recursively:NO]];
     [self.performerSceneLayer setAutoenablesDefaultLighting:YES];
-    
+
     // TASK: Set layers into tree
     
     [self.superLayer addSublayer:self.audienceSceneLayer];
@@ -112,7 +112,7 @@
     
     
     [player setMuted:YES]; // for development sanity
-    [player seekToTime:CMTimeMakeWithSeconds(464, 600)];
+    [player seekToTime:CMTimeMakeWithSeconds([self.scene startTime], 600)];
     [player play];
 }
 

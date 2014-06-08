@@ -33,9 +33,9 @@
     return arrow;
 }
 
-+ (SCNScene *)sceneWithComedyLabMocapURL:(NSURL *)url error:(NSError **)error
++ (CLDScene *)sceneWithComedyLabMocapURL:(NSURL *)url error:(NSError **)error
 {
-    SCNScene *scene = nil;
+    CLDScene *scene = nil;
     
     NSString *fileString = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:error];
 
@@ -101,6 +101,8 @@
             subjectRotationArray[i] = [NSMutableArray arrayWithCapacity:numberOfLines];
         }
         
+        float startTime = 0.0;
+        
         // Setup scanner
         
         NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@","];
@@ -123,6 +125,11 @@
                 NSLog(@"Time: %f, %f", datum, datum / finalTime);
                 timeArray[i] = @(datum / finalTime);
                 newline = NO;
+                
+                if (i == 0)
+                {
+                    startTime = datum;
+                }
             }
             else
             {
@@ -173,8 +180,10 @@
         
         // Create empty scene
         
-        scene = [SCNScene scene];
-
+        scene = [CLDScene scene];
+        [scene setStartTime: startTime];
+        [scene setFinishTime: finalTime];
+        
         // Add in cameras. Two that were actually in experiment, to align onto video. One to use as a roving eye. Values here are eyeballed.
         
         SCNCamera *audienceCamera = [SCNCamera camera];
