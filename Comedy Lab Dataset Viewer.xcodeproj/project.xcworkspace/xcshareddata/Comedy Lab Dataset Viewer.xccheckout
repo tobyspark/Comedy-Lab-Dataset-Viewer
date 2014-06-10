@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>ACDA7CF6-30B5-4B73-94B8-41E1586372AA</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Comedy Lab Dataset Viewer</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>9BBA0E83-65BF-499C-B3FA-30F8DCC19D90</key>
+		<string>https://github.com/tobyspark/Comedy-Lab-Dataset-Viewer.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Comedy Lab Dataset Viewer.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>9BBA0E83-65BF-499C-B3FA-30F8DCC19D90</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/tobyspark/Comedy-Lab-Dataset-Viewer.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>9BBA0E83-65BF-499C-B3FA-30F8DCC19D90</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>9BBA0E83-65BF-499C-B3FA-30F8DCC19D90</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Comedy Lab Dataset Viewer</string>
+		</dict>
+	</array>
+</dict>
+</plist>

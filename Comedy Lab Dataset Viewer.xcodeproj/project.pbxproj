@@ -63,6 +63,7 @@
 		A611FC33192269A9008E0ABD /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		A611FC3C1922E144008E0ABD /* CLDScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLDScene.h; sourceTree = "<group>"; };
 		A611FC3D1922E144008E0ABD /* CLDScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLDScene.m; sourceTree = "<group>"; };
+		A6ECBF8819258854001A5241 /* linmath.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = linmath.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,6 +143,7 @@
 				A611FC3D1922E144008E0ABD /* CLDScene.m */,
 				A611FC0B19225EBE008E0ABD /* CLDDocument.xib */,
 				A611FC0E19225EBE008E0ABD /* MainMenu.xib */,
+				A6ECBF8819258854001A5241 /* linmath.h */,
 				A611FC1119225EBE008E0ABD /* Images.xcassets */,
 				A611FBFD19225EBE008E0ABD /* Supporting Files */,
 			);
@@ -501,6 +503,7 @@
 				A611FC2919225EBF008E0ABD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		A611FC2A19225EBF008E0ABD /* Build configuration list for PBXNativeTarget "Comedy Lab Dataset ViewerTests" */ = {
 			isa = XCConfigurationList;
@@ -509,6 +512,7 @@
 				A611FC2C19225EBF008E0ABD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

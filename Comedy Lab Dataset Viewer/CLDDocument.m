@@ -28,6 +28,8 @@
     self = [super init];
     if (self) {
         // Add your subclass-specific initialization here.
+        
+        _freeSceneViewPovs = [NSMutableArray arrayWithCapacity:10];
     }
     return self;
 }
@@ -116,6 +118,45 @@
     [player play];
 }
 
+- (IBAction) freeSceneViewAddCurrentPov:(id)sender
+{
+    // TASK: Capture current point-of-view and set menu item for it's recall
+    
+    NSValue *povValue = [NSValue valueWithCATransform3D:self.freeSceneView.pointOfView.transform];
+    
+    [self.freeSceneViewPovs addObject:povValue];
+    
+    NSString *povString = [NSString stringWithFormat:@"Camera Pos %lu", (unsigned long)[self.freeSceneViewPovs count]];
+    NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)[self.freeSceneViewPovs count]];
+    
+    NSMenuItem *newPovMenuItem = [[NSMenuItem alloc] initWithTitle:povString action:@selector(freeSceneViewSetCurrentPov:) keyEquivalent:povKey];
+    
+    NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
+    
+    [viewMenu addItem:newPovMenuItem];
+}
+
+- (IBAction) freeSceneViewSetCurrentPov:(id)sender
+{
+    // TASK: Recall previously captured point of view
+    
+    NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
+    
+    // 0 = Add menuitem
+    // 1 = captured POV, array index 0
+    NSUInteger povIndexToRecall = [viewMenu indexOfItem:sender] - 1;
+    
+    NSValue *recalledPovValue = [self.freeSceneViewPovs objectAtIndex:povIndexToRecall];
+    
+    CABasicAnimation *povAnimation = [CABasicAnimation animationWithKeyPath:@"transform"];
+    povAnimation.fromValue = [NSValue valueWithCATransform3D:self.freeSceneView.pointOfView.transform];
+    povAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    povAnimation.duration = 1.0;
+    
+    [self.freeSceneView.pointOfView setTransform:[recalledPovValue CATransform3DValue]];
+    [self.freeSceneView.pointOfView addAnimation:povAnimation forKey:nil];
+}
+
 + (BOOL)autosavesInPlace
 {
     return YES;
@@ -147,6 +188,8 @@
     // TASK: Fit the video to the top of the window and lay out two camera views of the 3D scene on top of their corresponding video regions, and put the freeview 3D scene in the remaining space below.
     if (layer == self.superLayer)
     {
+        // Stop implicit animations
+        NSTimeInterval cachedAnimationDuration = [[NSAnimationContext currentContext] duration];
         [[NSAnimationContext currentContext] setDuration:0];
         
         CGRect layerRect = self.superLayer.bounds;
@@ -172,6 +215,10 @@
         // This is a view not layer, but no-need to reinvent the wheel...
         CGRect freeRect = CGRectMake(layerRect.origin.x, layerRect.origin.y, layerRect.size.width, layerRect.size.height - videoRect.size.height);
         [self.freeSceneView setFrame:freeRect];
+        
+        
+        // Revert to implicit animations
+        [[NSAnimationContext currentContext] setDuration:cachedAnimationDuration];
     }
 }
 

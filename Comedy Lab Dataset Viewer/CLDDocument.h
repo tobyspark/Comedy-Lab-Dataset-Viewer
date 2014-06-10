@@ -13,4 +13,9 @@
 
 @interface CLDDocument : NSDocument
 
+@property (strong) NSMutableArray* freeSceneViewPovs;
+
+- (IBAction) freeSceneViewAddCurrentPov:(id)sender;
+- (IBAction) freeSceneViewSetCurrentPov:(id)sender;
+
 @end
