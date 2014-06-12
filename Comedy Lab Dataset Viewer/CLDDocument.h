@@ -11,6 +11,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AVKit/AVKit.h>
 #import "CLDScene.h"
+#import "CLDView.h"
 
 @interface CLDDocument : NSDocument
 

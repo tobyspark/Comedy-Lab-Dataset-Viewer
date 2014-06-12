@@ -87,34 +87,41 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     SCNScene *scene = [SCNScene scene];
     
     // Add in cameras. Two that were actually in experiment, to align onto video. One to use as a roving eye. Values here are eyeballed.
+    // 35mm equivalent focal length for JVC GY-HM150 at max wide = 39mm.
     
     SCNCamera *audienceCamera = [SCNCamera camera];
     [audienceCamera setAutomaticallyAdjustsZRange: YES];
-    [audienceCamera setXFov: (180.0*35.0) / (M_PI*39)]; // 35mm equivalent focal length for JVC GY-HM150 at max wide = 39mm
-    
-    CATransform3D audienceTransform = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
-    audienceTransform = CATransform3DRotate(audienceTransform, GLKMathDegreesToRadians(100), 1, 0, 0);
-    audienceTransform = CATransform3DTranslate(audienceTransform, -1000, 0, 3000);
+    float focalLength = 40;
+    [audienceCamera setXFov: (180.0*35.0) / (M_PI*focalLength)];
     
     SCNNode *audienceCameraNode = [SCNNode node];
     [audienceCameraNode setName:@"Camera-Audience"];
     [audienceCameraNode setCamera:audienceCamera];
-    [audienceCameraNode setTransform:audienceTransform];
+    
+    // Do two-part CATransform3DRotate to ensure orientation is correct
+    CATransform3D cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
+    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(55), 1, 0, 0);
+    [audienceCameraNode setTransform:cameraOrientation];
+    
+    // Now set position in world coords rather than translate.
+    [audienceCameraNode setPosition: SCNVector3Make(-800, -400, 4200)];
     
     [scene.rootNode addChildNode:audienceCameraNode];
     
     SCNCamera *performerCamera = [SCNCamera camera];
     [performerCamera setAutomaticallyAdjustsZRange:YES];
-    //[performerCamera setXFov:90];
-    
-    CATransform3D performerTransform = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
-    //performerTransform = CATransform3DRotate(performerTransform, GLKMathDegreesToRadians(90), 1, 0, 0);
-    //performerTransform = CATransform3DTranslate(performerTransform, 6000, 0, 2000);
+    focalLength = 70;
+    [performerCamera setXFov: (180.0*35.0) / (M_PI*focalLength)];
     
     SCNNode *performerCameraNode = [SCNNode node];
     [performerCameraNode setName:@"Camera-Performer"];
     [performerCameraNode setCamera:performerCamera];
-    [performerCameraNode setTransform:performerTransform];
+    
+    cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 0, 0, 1);
+    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(80), 1, 0, 0);
+    [performerCameraNode setTransform:cameraOrientation];
+    
+    [performerCameraNode setPosition:SCNVector3Make(9000, 0, 2400)];
     
     [scene.rootNode addChildNode:performerCameraNode];
     
@@ -125,15 +132,23 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     
     SCNNode *orthoCameraNode = [SCNNode node];
     orthoCameraNode.name = @"Camera-Orthographic";
-    orthoCameraNode.position = SCNVector3Make(2000, 0, 2000); // a guess for now
+    orthoCameraNode.position = SCNVector3Make(2000, 0, 6000); // a guess for now
     [orthoCameraNode setCamera:orthoCamera];
     
     [scene.rootNode addChildNode:orthoCameraNode];
     
     // Add in floor, as a visual cue for setting camera
-    SCNNode *floor = [SCNNode nodeWithGeometry:[SCNPlane planeWithWidth:6000 height:4000]];
-    floor.position = SCNVector3Make(3000, 0, 0);
-    [scene.rootNode addChildNode:floor];
+//    SCNNode *floor = [SCNNode nodeWithGeometry:[SCNPlane planeWithWidth:6000 height:5000]];
+//    floor.position = SCNVector3Make(3000, 0, 0);
+//    [scene.rootNode addChildNode:floor];
+    
+    for (CGFloat y = -2500; y <= 2500; y += 500)
+    {
+        SCNNode *line = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:6000 height:5 length:5 chamferRadius:0]];
+        line.position = SCNVector3Make(3000, y, 0);
+        [scene.rootNode addChildNode:line];
+    }
+
     
     // Add in a light.
     // Use diffuse rather than spot as we want to see the arrows, but set it approx where spotlight is so arrows light vaugely as per scene.
