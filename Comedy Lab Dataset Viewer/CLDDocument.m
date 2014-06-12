@@ -318,10 +318,8 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
 {
-    NSURL *sceneURL = [absoluteURL URLByAppendingPathComponent:CLDSceneFileName];
     NSURL *metadataURL = [absoluteURL URLByAppendingPathComponent:CLDMetadataFileName];
-    BOOL sceneSuccess, metadataSuccess;
-    NSError *sceneError = nil;
+    BOOL metadataSuccess;
     
     NSDictionary *metadata = [NSDictionary dictionaryWithContentsOfURL:metadataURL];
     metadataSuccess = (metadata != nil);
@@ -335,24 +333,9 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
         
         NSString *datasetPath = [metadata objectForKey:CLDMetadataKeyDatasetPath];
         if (datasetPath) self.datasetURL = [NSURL fileURLWithPath:datasetPath];
-        
-        [self loadMovie];
     }
-
-// WELL THAT DIDN'T WORK THEN
-//    SCNScene *scene = [SCNScene sceneWithURL:sceneURL options:nil error:&sceneError];
-//    sceneSuccess = (sceneError == nil);
-//    if (sceneSuccess)
-//    {
-//        self.scene = scene;
-//        NSLog(@"nodes in: %@", [scene.rootNode childNodes]);
-//    }
-//    else
-//    {
-//        //outError = &sceneError;
-//    }
     
-    return metadataSuccess && sceneSuccess;
+    return metadataSuccess;
 }
 
 #pragma mark CALayoutManager Delegate
