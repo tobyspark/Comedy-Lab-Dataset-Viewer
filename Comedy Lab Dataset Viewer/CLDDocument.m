@@ -7,9 +7,16 @@
 //
 
 #import "CLDDocument.h"
-#import "CLDScene.h"
+
+NSString *CLDSceneFileName = @"Scene.dae";
+NSString *CLDMetadataFileName = @"Metadata.plist";
+NSString *CLDMetadataKeyMoviePath = @"moviePath";
+NSString *CLDMetadataKeyMocapPath = @"mocapPath";
+NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
 
 @interface CLDDocument ()
+
+@property (strong, nonatomic) SCNScene *scene;
 
 @property (weak)   CALayer          *superLayer;
 @property (strong) AVPlayerView     *playerView;
@@ -17,7 +24,7 @@
 @property (strong) SCNLayer         *performerSceneLayer;
 @property (strong) SCNView          *freeSceneView;
 
-@property (strong) CLDScene*        scene;
+@property (strong) NSMutableArray* freeSceneViewPovs;
 
 @end
 
@@ -46,20 +53,7 @@
     [super windowControllerDidLoadNib:aController];
     // Add any code here that needs to be executed once the windowController has loaded the document's window.
     
-    // TASK: Setup Video Playback
-    // Do this before making layers so we can use it as source in them and sync between them
-    
-    NSURL *movieURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Video/Performance 1 3pm Live 720P.mov"];
-    AVPlayer *player = [AVPlayer playerWithURL: movieURL];
-    
-    // TASK: Get our 3D scene
-    // Generate from CSV exported from Vicon in first instance
-    // The scene could then be saved and loaded from a file bundle
-    
-    NSURL *csvURL = [NSURL fileURLWithPath:@"/Users/Shared/ComedyLab/Data - Raw/Motion Capture/TUESDAY 3pm 123.csv"];
-    [self setScene:[CLDScene sceneWithComedyLabMocapURL:csvURL error:nil]];
-    
-    // TASK: Create Views and Layers
+    // TASK: Make window layer backed
     
     [aController.window.contentView setWantsLayer:YES];
     
@@ -72,15 +66,12 @@
     
     // Use AVPlayerView rather than AVPlayerLayer as this gives us UI
     [self setPlayerView:[[AVPlayerView alloc] initWithFrame:aController.window.frame]];
-    [self.playerView setPlayer:player];
     [self.playerView setControlsStyle:AVPlayerViewControlsStyleInline];
     
     [aController.window.contentView addSubview:self.playerView];
     
     // Use SCNView rather than layer as this gives us UI, and we can now keep in sync using AVPlayer's periodicTimeObserver rather than the broken elegance of AVSyncronizedLayer
     [self setFreeSceneView:[[SCNView alloc] initWithFrame:aController.window.frame]];
-    [self.freeSceneView setScene:self.scene];
-    [self.freeSceneView setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Orthographic" recursively:NO]];
     [self.freeSceneView setAutoenablesDefaultLighting:YES];
     [self.freeSceneView setAllowsCameraControl:YES];
     
@@ -89,13 +80,9 @@
     // TASK: Setup individual layers
     
     [self setAudienceSceneLayer:[SCNLayer layer]];
-    [self.audienceSceneLayer setScene:self.scene];
-    [self.audienceSceneLayer setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Audience" recursively:NO]];
     [self.audienceSceneLayer setAutoenablesDefaultLighting:YES];
     
     [self setPerformerSceneLayer:[SCNLayer layer]];
-    [self.performerSceneLayer setScene:self.scene];
-    [self.performerSceneLayer setPointOfView:[self.scene.rootNode childNodeWithName:@"Camera - Performer" recursively:NO]];
     [self.performerSceneLayer setAutoenablesDefaultLighting:YES];
 
     // TASK: Set layers into tree
@@ -103,19 +90,132 @@
     [self.superLayer addSublayer:self.audienceSceneLayer];
     [self.superLayer addSublayer:self.performerSceneLayer];
     
-    // AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions), see early commits
-    // So we use this instead, which also allows us to make freeScene a SCNView with it's built-in camera UI.
-    [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
-        NSTimeInterval timeSecs = CMTimeGetSeconds(time);
-        [self.audienceSceneLayer setCurrentTime:timeSecs];
-        [self.performerSceneLayer setCurrentTime:timeSecs];
-        [self.freeSceneView setCurrentTime:timeSecs];
+    // TASK: Get going for user
+    if (!self.scene) self.scene = [SCNScene comedyLabScene];
+    else self.scene = _scene; // trigger setter
+    [self loadMovie];
+}
+
+- (IBAction) chooseMovie:(id)sender
+{
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setTitle:@"Select video"];
+    [openPanel setAllowedFileTypes:@[@"public.movie"]];
+    [openPanel setAllowsMultipleSelection:NO];
+    
+    NSWindowController* wc = self.windowControllers[0];
+    
+    [openPanel beginSheetModalForWindow:wc.window completionHandler:^(NSInteger result) {
+        self.movieURL = [openPanel URLs][0];
+        [self loadMovie];
     }];
+}
+
+- (IBAction) chooseMocapData:(id)sender
+{
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setTitle:@"Select Mocap Data CSV"];
+    [openPanel setAllowedFileTypes:@[@"public.comma-separated-values-text"]];
+    [openPanel setAllowsMultipleSelection:NO];
     
+    NSWindowController* wc = self.windowControllers[0];
     
-    [player setMuted:YES]; // for development sanity
-    [player seekToTime:CMTimeMakeWithSeconds([self.scene startTime], 600)];
-    [player play];
+    [openPanel beginSheetModalForWindow:wc.window completionHandler:^(NSInteger result) {
+        self.mocapURL = [openPanel URLs][0];
+        [self loadMocap];
+    }];
+}
+
+- (IBAction) chooseAnalysisDataset:(id)sender
+{
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setTitle:@"Select Analysis Dataset CSV"];
+    [openPanel setAllowedFileTypes:@[@"public.comma-separated-values-text"]];
+    [openPanel setAllowsMultipleSelection:NO];
+    
+    NSWindowController* wc = self.windowControllers[0];
+    
+    [openPanel beginSheetModalForWindow:wc.window completionHandler:^(NSInteger result) {
+        self.datasetURL = [openPanel URLs][0];
+        [self loadDataset];
+    }];
+}
+
+- (void) loadMovie
+{
+    if (!self.playerView)
+    {
+        NSLog(@"Cannot load movie if playerView not initialised");
+        return;
+    }
+    
+    if (!self.movieURL)
+    {
+        NSLog(@"No movie to load");
+        return;
+    }
+    
+    AVPlayer *player = [AVPlayer playerWithURL:self.movieURL];
+    if (player)
+    {
+        // AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions), see early commits
+        // So we use this instead, which also allows us to make freeScene a SCNView with it's built-in camera UI.
+        [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
+            NSTimeInterval timeSecs = CMTimeGetSeconds(time);
+            [self.audienceSceneLayer setCurrentTime:timeSecs];
+            [self.performerSceneLayer setCurrentTime:timeSecs];
+            [self.freeSceneView setCurrentTime:timeSecs];
+        }];
+        
+        [player setMuted:YES]; // for development sanity
+        NSTimeInterval startTime = [[self.scene attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
+        [player seekToTime:CMTimeMakeWithSeconds(startTime, 600)];
+        [player play];
+        
+        self.playerView.player = player;
+        
+        NSLog(@"Loaded movie: %@", self.movieURL);
+    }
+    else
+    {
+        NSLog(@"Failed to load movie: %@", self.movieURL);
+    }
+}
+
+- (void) setScene:(SCNScene *)scene
+{
+    _scene = scene;
+    
+    [self.freeSceneView setScene:scene];
+    [self.freeSceneView setPointOfView:[scene.rootNode childNodeWithName:@"Camera-Orthographic" recursively:NO]];
+    
+    [self.audienceSceneLayer setScene:scene];
+    [self.audienceSceneLayer setPointOfView:[scene.rootNode childNodeWithName:@"Camera-Audience" recursively:NO]];
+    
+    [self.performerSceneLayer setScene:scene];
+    [self.performerSceneLayer setPointOfView:[scene.rootNode childNodeWithName:@"Camera-Performer" recursively:NO]];
+}
+
+- (void) loadMocap
+{
+    if (!self.scene)
+    {
+        NSLog(@"Cannot load mocap data if scene not initialised");
+        return;
+    }
+    
+    [self.scene addWithMocapURL:self.mocapURL error:nil];
+}
+
+- (void) loadDataset
+{
+    if (!self.scene)
+    {
+        NSLog(@"Cannot load analytic dataset if scene not initialised");
+        return;
+    }
+    
+    //[self.scene addWithDatasetURL:self.datasetURL error:nil];
 }
 
 - (IBAction) freeSceneViewAddCurrentPov:(id)sender
@@ -162,23 +262,82 @@
     return YES;
 }
 
-- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
+#pragma mark - Package Support
+
+- (BOOL)writeToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
 {
-    // Insert code here to write your document to data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning nil.
-    // You can also choose to override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
-    NSException *exception = [NSException exceptionWithName:@"UnimplementedMethod" reason:[NSString stringWithFormat:@"%@ is unimplemented", NSStringFromSelector(_cmd)] userInfo:nil];
-    @throw exception;
-    return nil;
+    NSURL *sceneURL = [absoluteURL URLByAppendingPathComponent:CLDSceneFileName];
+    NSURL *metadataURL = [absoluteURL URLByAppendingPathComponent:CLDMetadataFileName];
+    BOOL sceneSuccess, metadataSuccess;
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager createDirectoryAtURL:absoluteURL withIntermediateDirectories:NO attributes:nil error:nil];
+    
+    // TASK: Metadata
+    
+    NSMutableDictionary *metadata = [NSMutableDictionary dictionaryWithCapacity:5];
+    
+    NSString *moviePath = [self.movieURL path];
+    if (moviePath) [metadata setObject:moviePath forKey:CLDMetadataKeyMoviePath];
+    
+    NSString *mocapPath = [self.mocapURL path];
+    if (mocapPath) [metadata setObject:mocapPath forKey:CLDMetadataKeyMocapPath];
+    
+    NSString *datasetPath = [self.datasetURL path];
+    if (datasetPath) [metadata setObject:datasetPath forKey:CLDMetadataKeyDatasetPath];
+    
+    
+    metadataSuccess = [metadata writeToURL:metadataURL atomically:YES];
+    
+    // TASK: Scene
+    NSLog(@"nodes out: %@", [self.scene.rootNode childNodes]);
+    sceneSuccess = [self.scene writeToURL:sceneURL
+                                  options:nil
+                                 delegate:nil
+                          progressHandler:^(float totalProgress, NSError *error, BOOL *stop)
+        {
+            NSLog(@"Writing scene progress: %f", totalProgress);
+        }];
+    
+    return metadataSuccess && sceneSuccess;
 }
 
-- (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError
+- (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
 {
-    // Insert code here to read your document from the given data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning NO.
-    // You can also choose to override -readFromFileWrapper:ofType:error: or -readFromURL:ofType:error: instead.
-    // If you override either of these, you should also override -isEntireFileLoaded to return NO if the contents are lazily loaded.
-    NSException *exception = [NSException exceptionWithName:@"UnimplementedMethod" reason:[NSString stringWithFormat:@"%@ is unimplemented", NSStringFromSelector(_cmd)] userInfo:nil];
-    @throw exception;
-    return YES;
+    NSURL *sceneURL = [absoluteURL URLByAppendingPathComponent:CLDSceneFileName];
+    NSURL *metadataURL = [absoluteURL URLByAppendingPathComponent:CLDMetadataFileName];
+    BOOL sceneSuccess, metadataSuccess;
+    NSError *sceneError = nil;
+    
+    NSDictionary *metadata = [NSDictionary dictionaryWithContentsOfURL:metadataURL];
+    metadataSuccess = (metadata != nil);
+    if (metadataSuccess)
+    {
+        NSString *moviePath = [metadata objectForKey:CLDMetadataKeyMoviePath];
+        if (moviePath) self.movieURL = [NSURL fileURLWithPath:moviePath];
+        
+        NSString *mocapPath = [metadata objectForKey:CLDMetadataKeyMocapPath];
+        if (mocapPath) self.mocapURL = [NSURL fileURLWithPath:mocapPath];
+        
+        NSString *datasetPath = [metadata objectForKey:CLDMetadataKeyDatasetPath];
+        if (datasetPath) self.datasetURL = [NSURL fileURLWithPath:datasetPath];
+        
+        [self loadMovie];
+    }
+
+    SCNScene *scene = [SCNScene sceneWithURL:sceneURL options:nil error:&sceneError];
+    sceneSuccess = (sceneError == nil);
+    if (sceneSuccess)
+    {
+        self.scene = scene;
+        NSLog(@"nodes in: %@", [scene.rootNode childNodes]);
+    }
+    else
+    {
+        //outError = &sceneError;
+    }
+    
+    return metadataSuccess && sceneSuccess;
 }
 
 #pragma mark CALayoutManager Delegate

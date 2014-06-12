@@ -10,11 +10,17 @@
 #import <SceneKit/SceneKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <AVKit/AVKit.h>
+#import "CLDScene.h"
 
 @interface CLDDocument : NSDocument
 
-@property (strong) NSMutableArray* freeSceneViewPovs;
+@property (strong) NSURL *movieURL;
+@property (strong) NSURL *mocapURL;
+@property (strong) NSURL *datasetURL;
 
+- (IBAction) chooseMovie:(id)sender;
+- (IBAction) chooseMocapData:(id)sender;
+- (IBAction) chooseAnalysisDataset:(id)sender;
 - (IBAction) freeSceneViewAddCurrentPov:(id)sender;
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender;
 

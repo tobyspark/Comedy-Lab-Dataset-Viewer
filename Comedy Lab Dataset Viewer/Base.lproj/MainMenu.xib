@@ -82,6 +82,25 @@
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="m54-Is-iLE"/>
+                            <menuItem title="Set Movie..." id="YyY-7T-hfd">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="chooseMovie:" target="-1" id="hu5-Ok-Fmm"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Import Mocap Data..." id="pgN-YQ-eJl">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="chooseMocapData:" target="-1" id="eHt-b9-HDT"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Import Analysis Dataset..." id="nCz-Gg-ScY">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="chooseAnalysisDataset:" target="-1" id="qcY-er-35q"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="cj4-BL-Wk5"/>
                             <menuItem title="Close" keyEquivalent="w" id="DVo-aG-piG">
                                 <connections>
                                     <action selector="performClose:" target="-1" id="HmO-Ls-i7Q"/>

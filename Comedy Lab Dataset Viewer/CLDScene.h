@@ -8,12 +8,16 @@
 
 #import <SceneKit/SceneKit.h>
 
-@interface CLDScene : SCNScene
-@property NSTimeInterval startTime;
-@property NSTimeInterval finishTime;
+@interface SCNNode (ComedyLabAdditions)
 
-+ (SCNNode *) arrow;
++ (instancetype) arrow;
 
-+ (instancetype)sceneWithComedyLabMocapURL:(NSURL *)url error:(NSError **)error;
+@end
+
+@interface SCNScene (ComedyLabAdditions)
+
++ (instancetype)comedyLabScene;
+
+- (BOOL)addWithMocapURL:(NSURL *)url error:(NSError **)error;
 
 @end
