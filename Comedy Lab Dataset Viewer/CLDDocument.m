@@ -92,8 +92,12 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
     
     // TASK: Get going for user
     self.scene = [SCNScene comedyLabScene];
-    [self.scene addWithMocapURL:self.mocapURL error:nil];
+    [self performSelectorInBackground:@selector(loadMocap) withObject:nil];
+    [self performSelectorInBackground:@selector(loadDataset) withObject:nil];
     [self loadMovie];
+    
+    [self.playerView.player setMuted:YES]; // for development sanity
+    [self.playerView.player play];
 }
 
 - (IBAction) chooseMovie:(id)sender
@@ -167,10 +171,7 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
             [self.freeSceneView setCurrentTime:timeSecs];
         }];
         
-        [player setMuted:YES]; // for development sanity
-        NSTimeInterval startTime = [[self.scene attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
-        [player seekToTime:CMTimeMakeWithSeconds(startTime, 600)];
-        [player play];
+        [self movieSeekToSceneStart];
         
         self.playerView.player = player;
         
@@ -180,6 +181,12 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
     {
         NSLog(@"Failed to load movie: %@", self.movieURL);
     }
+}
+
+- (void) movieSeekToSceneStart
+{
+    NSTimeInterval startTime = [[self.scene attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
+    [self.playerView.player seekToTime:CMTimeMakeWithSeconds(startTime, 600)];
 }
 
 - (void) setScene:(SCNScene *)scene
@@ -203,8 +210,11 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
         NSLog(@"Cannot load mocap data if scene not initialised");
         return;
     }
-    
-    [self.scene addWithMocapURL:self.mocapURL error:nil];
+    @synchronized(self.scene)
+    {
+        [self.scene addWithMocapURL:self.mocapURL error:nil];
+        [self movieSeekToSceneStart];
+    }
 }
 
 - (void) loadDataset
@@ -215,7 +225,11 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
         return;
     }
     
-    //[self.scene addWithDatasetURL:self.datasetURL error:nil];
+    @synchronized(self.scene)
+    {
+        //[self.scene addWithDatasetURL:self.datasetURL error:nil];
+        [self movieSeekToSceneStart];
+    }
 }
 
 - (IBAction) freeSceneViewAddCurrentPov:(id)sender
