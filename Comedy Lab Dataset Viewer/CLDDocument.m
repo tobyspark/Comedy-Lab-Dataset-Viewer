@@ -13,6 +13,7 @@ NSString *CLDMetadataFileName = @"Metadata.plist";
 NSString *CLDMetadataKeyMoviePath = @"moviePath";
 NSString *CLDMetadataKeyMocapPath = @"mocapPath";
 NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
+NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
 
 @interface CLDDocument ()
 
@@ -236,18 +237,38 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
 {
     // TASK: Capture current point-of-view and set menu item for it's recall
     
-    NSValue *povValue = [NSValue valueWithCATransform3D:self.freeSceneView.pointOfView.transform];
+    CATransform3D transform = self.freeSceneView.pointOfView.transform;
+    NSData *povData = [NSData dataWithBytes:&transform length:sizeof(CATransform3D)];
     
-    [self.freeSceneViewPovs addObject:povValue];
+    [self.freeSceneViewPovs addObject:povData];
     
-    NSString *povString = [NSString stringWithFormat:@"Camera Pos %lu", (unsigned long)[self.freeSceneViewPovs count]];
-    NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)[self.freeSceneViewPovs count]];
-    
-    NSMenuItem *newPovMenuItem = [[NSMenuItem alloc] initWithTitle:povString action:@selector(freeSceneViewSetCurrentPov:) keyEquivalent:povKey];
-    
+    [self syncPovsWithViewMenu];
+}
+
+- (void) syncPovsWithViewMenu
+{
     NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
     
-    [viewMenu addItem:newPovMenuItem];
+    NSUInteger startIndexForPovs = 1;
+    NSUInteger povsCount = [self.freeSceneViewPovs count];
+    NSUInteger menuitemsCount = [[viewMenu itemArray] count] - startIndexForPovs;
+    
+    while (povsCount < menuitemsCount)
+    {
+        menuitemsCount--;
+        [viewMenu removeItemAtIndex:menuitemsCount];
+    }
+    
+    while (povsCount > menuitemsCount)
+    {
+        NSString *povString = [NSString stringWithFormat:@"Camera Pos %lu", (unsigned long)menuitemsCount + startIndexForPovs];
+        NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)menuitemsCount + startIndexForPovs];
+        
+        NSMenuItem *newPovMenuItem = [[NSMenuItem alloc] initWithTitle:povString action:@selector(freeSceneViewSetCurrentPov:) keyEquivalent:povKey];
+        
+        [viewMenu addItem:newPovMenuItem];
+        menuitemsCount++;
+    }
 }
 
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender
@@ -260,14 +281,17 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
     // 1 = captured POV, array index 0
     NSUInteger povIndexToRecall = [viewMenu indexOfItem:sender] - 1;
     
-    NSValue *recalledPovValue = [self.freeSceneViewPovs objectAtIndex:povIndexToRecall];
+    // Use NSData as [NSValue CATransform3DValue] can't be archived by NSDictionary or NSKeyedArchiver
+    NSData *recalledPovData = [self.freeSceneViewPovs objectAtIndex:povIndexToRecall];
+    CATransform3D recalledTransform;
+    [recalledPovData getBytes:&recalledTransform length:sizeof(CATransform3D)];
     
     CABasicAnimation *povAnimation = [CABasicAnimation animationWithKeyPath:@"transform"];
     povAnimation.fromValue = [NSValue valueWithCATransform3D:self.freeSceneView.pointOfView.transform];
     povAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
     povAnimation.duration = 1.0;
     
-    [self.freeSceneView.pointOfView setTransform:[recalledPovValue CATransform3DValue]];
+    [self.freeSceneView.pointOfView setTransform:recalledTransform];
     [self.freeSceneView.pointOfView addAnimation:povAnimation forKey:nil];
 }
 
@@ -300,6 +324,7 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
     NSString *datasetPath = [self.datasetURL path];
     if (datasetPath) [metadata setObject:datasetPath forKey:CLDMetadataKeyDatasetPath];
     
+    [metadata setObject:self.freeSceneViewPovs forKey:CLDMetadataKeyViewPovs];
     
     metadataSuccess = [metadata writeToURL:metadataURL atomically:YES];
     
@@ -333,6 +358,9 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
         
         NSString *datasetPath = [metadata objectForKey:CLDMetadataKeyDatasetPath];
         if (datasetPath) self.datasetURL = [NSURL fileURLWithPath:datasetPath];
+        
+        self.freeSceneViewPovs = [metadata objectForKey:CLDMetadataKeyViewPovs];
+        [self syncPovsWithViewMenu];
     }
     
     return metadataSuccess;
