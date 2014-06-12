@@ -91,8 +91,8 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
     [self.superLayer addSublayer:self.performerSceneLayer];
     
     // TASK: Get going for user
-    if (!self.scene) self.scene = [SCNScene comedyLabScene];
-    else self.scene = _scene; // trigger setter
+    self.scene = [SCNScene comedyLabScene];
+    [self.scene addWithMocapURL:self.mocapURL error:nil];
     [self loadMovie];
 }
 
@@ -325,17 +325,18 @@ NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
         [self loadMovie];
     }
 
-    SCNScene *scene = [SCNScene sceneWithURL:sceneURL options:nil error:&sceneError];
-    sceneSuccess = (sceneError == nil);
-    if (sceneSuccess)
-    {
-        self.scene = scene;
-        NSLog(@"nodes in: %@", [scene.rootNode childNodes]);
-    }
-    else
-    {
-        //outError = &sceneError;
-    }
+// WELL THAT DIDN'T WORK THEN
+//    SCNScene *scene = [SCNScene sceneWithURL:sceneURL options:nil error:&sceneError];
+//    sceneSuccess = (sceneError == nil);
+//    if (sceneSuccess)
+//    {
+//        self.scene = scene;
+//        NSLog(@"nodes in: %@", [scene.rootNode childNodes]);
+//    }
+//    else
+//    {
+//        //outError = &sceneError;
+//    }
     
     return metadataSuccess && sceneSuccess;
 }
