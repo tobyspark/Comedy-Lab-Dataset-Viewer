@@ -196,7 +196,7 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     NSString *finalTimeString = nil;
     [scanner setScanLocation:lastIndex];
     [scanner scanUpToString:@"," intoString:&finalTimeString];
-    float finalTime = [finalTimeString floatValue];
+    CGFloat finalTime = [finalTimeString doubleValue];
     
     if (finalTime < 0.0001)
     {
@@ -235,7 +235,7 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
         subjectRotationArray[i] = [NSMutableArray arrayWithCapacity:numberOfLines];
     }
     
-    float startTime = 0.0;
+    CGFloat startTime = 0.0;
     
     // Setup scanner
     
@@ -247,12 +247,12 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     // Scan through data
     
     BOOL newline = true;
-    float datum;
-    float data[kCLDdatumPerSubject];
+    CGFloat datum;
+    CGFloat data[kCLDdatumPerSubject];
     NSUInteger i = 0;
     NSUInteger subject = 0;
     NSUInteger dataColumn = 0;
-    while ([scanner scanFloat:&datum])
+    while ([scanner scanDouble:&datum])
     {
         if (newline)
         {
@@ -359,6 +359,137 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     [self setAttribute:@(startTime) forKey:SCNSceneStartTimeAttributeKey];
     [self setAttribute:@(finalTime) forKey:SCNSceneEndTimeAttributeKey];
     
+    return YES;
+}
+
+
+- (BOOL)addWithDatasetURL:(NSURL *)url error:(NSError **)error
+{
+    NSString *fileString = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:error];
+    
+    if (!fileString)
+    {
+        NSLog(@"Abort import - Dataset URL: %@", url);
+        return NO;
+    }
+    
+    // TASK: Parse CSV file exported from ComedyLab Stats Exporter
+    // Exporter: https://github.com/tobyspark/ComedyLab/tree/master/Stats%20Exporter
+    // Dataset file: https://github.com/tobyspark/ComedyLab/blob/master/Data%20-%20For%20analysis/Comedy%20Lab%204Jun%20Performance%201%20Data.txt
+    
+    // Columns as per StatsConfig.json, ie. https://github.com/tobyspark/ComedyLab/blob/master/Stats%20Exporter/Perf%203%20Data/Performance%203%20StatsConfig.json
+    // "fields": ["Light State While", "Laugh State", "Breathing Belt", "Happy", "Sad", "Surprised", "Angry", "MouthOpen", "Distance from Performer", "Angle from Performer", "Movement", "isLookingAt", "isBeingLookedAtByPerformer", "isBeingLookedAtByAudienceMember"]
+
+    if ([[self attributeForKey:SCNSceneEndTimeAttributeKey] doubleValue] < 1.0)
+    {
+        NSLog(@"Loading dataset when mocap data not loaded. Aborting.");
+    }
+    
+    NSArray *headerExpectedItems = @[@"AudienceID", @"TimeStamp", @"Light State While", @"Laugh State", @"Breathing Belt", @"Happy", @"Sad", @"Surprised", @"Angry", @"MouthOpen", @"Distance from Performer", @"Angle from Performer", @"Movement", @"isLookingAt", @"isBeingLookedAtByPerformer", @"isBeingLookedAtByAudienceMember"];
+    
+    NSScanner *scanner = [NSScanner scannerWithString:fileString];
+    
+    // Parse header row
+    NSString *header = nil;
+    [scanner scanUpToCharactersFromSet:[NSCharacterSet newlineCharacterSet] intoString:&header];
+    
+    NSArray *headerItems = [header componentsSeparatedByString:@", "];
+    
+    if (![headerItems isEqual:headerExpectedItems])
+    {
+        NSLog(@"Headers not as expected");
+        NSLog(@"Expected: %@", headerExpectedItems);
+        NSLog(@"Found: %@", headerItems);
+        return NO;
+    }
+    
+    // TASK: Parse data
+    
+    // CSV data *has* spaces, no missing values.
+    
+    // Create arrays to hold position and rotation over time for all subjects
+    
+    CGFloat startTime = [[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
+    CGFloat endTime = [[self attributeForKey:SCNSceneEndTimeAttributeKey] doubleValue];
+    CGFloat stepTime = 0.1;
+    NSUInteger timeStampCount = (endTime - startTime) / stepTime;
+    
+    NSMutableArray *timeArray = [NSMutableArray arrayWithCapacity:timeStampCount];
+    for (NSUInteger i = 0; i < timeStampCount; ++i)
+    {
+        [timeArray addObject:@(startTime + i*stepTime)];
+    }
+    
+    NSArray *audienceNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+        return [[child name] hasPrefix:@"Audience"];
+    }];
+    
+    NSMutableDictionary *audienceData = [NSMutableDictionary dictionaryWithCapacity:[audienceNodes count]];
+    for (SCNNode *node in audienceNodes)
+    {
+        NSMutableDictionary *subjectData = [NSMutableDictionary dictionaryWithCapacity:10];
+        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"lightState"];
+        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"laughState"];
+        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"breathingBelt"];
+        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"happiness"];
+        
+        for (NSString* key in subjectData)
+        {
+            NSMutableArray *array = [subjectData objectForKey:key];
+            for (NSUInteger i = 0; i < timeStampCount; ++i)
+            {
+                [array addObject:[NSNull null]];
+            }
+        }
+        
+        NSString *nameWithoutSpace = [[node name] stringByReplacingOccurrencesOfString:@"_" withString:@" "];
+        [audienceData setObject:subjectData forKey:nameWithoutSpace];
+    }
+
+    // Setup scanner
+    
+    
+    NSString * const lightStateLit = @"Lit";
+    NSString * const lightStateUnlit = @"Unl";
+    NSString * const lightStateUnknown = @"";
+    
+    NSMutableSet *missingSubjects = [NSMutableSet setWithCapacity:[audienceData count]];
+    
+    // Can't scan through directly as some numerical values are 'n/a', so take line and split into array
+    NSString *line = nil;
+    NSCharacterSet *newLine = [NSCharacterSet newlineCharacterSet];
+    
+    while ([scanner scanUpToCharactersFromSet:newLine intoString:&line])
+    {
+        NSArray *entries = [line componentsSeparatedByString:@", "];
+        
+        NSString *subject = entries[0];
+        CGFloat time = [entries[1] doubleValue];
+        NSUInteger timeIndex = round(((time - startTime) / stepTime));
+        //NSLog(@"time %@ gets via index %@", entries[1], timeArray[timeIndex]);
+        
+        NSString* lightState;
+        if ([entries[2] hasPrefix:lightStateLit]) lightState = lightStateLit;
+        else if ([entries[2] hasPrefix: lightStateUnlit]) lightState = lightStateUnlit;
+        else lightState = lightStateUnknown;
+        
+        
+        NSDictionary *subjectData = [audienceData objectForKey:subject];
+        if (!subjectData)
+        {
+            [missingSubjects addObject:subject];
+            continue;
+        }
+        
+        NSMutableArray *lightStateArray = [subjectData objectForKey:@"lightState"];
+        [lightStateArray replaceObjectAtIndex:timeIndex withObject:lightState];
+    }
+    
+    if ([missingSubjects count] > 0)
+    {
+        NSLog(@"Data omitted: scene missing subjects: %@", missingSubjects);
+    }
+
     return YES;
 }
 

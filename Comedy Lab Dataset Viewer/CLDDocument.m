@@ -231,7 +231,7 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
     
     @synchronized(self.scene)
     {
-        //[self.scene addWithDatasetURL:self.datasetURL error:nil];
+        [self.scene addWithDatasetURL:self.datasetURL error:nil];
         [self movieSeekToSceneStart];
     }
 }

@@ -20,4 +20,6 @@
 
 - (BOOL)addWithMocapURL:(NSURL *)url error:(NSError **)error;
 
+- (BOOL)addWithDatasetURL:(NSURL *)url error:(NSError **)error;
+
 @end
