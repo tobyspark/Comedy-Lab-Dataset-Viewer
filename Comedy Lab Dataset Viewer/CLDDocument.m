@@ -204,7 +204,7 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
     [self.performerSceneLayer setPointOfView:[scene.rootNode childNodeWithName:@"Camera-Performer" recursively:NO]];
     
     CLDView *superview = (CLDView*)[self.freeSceneView superview];
-    [superview setNodeToMove:[scene.rootNode childNodeWithName:@"Camera-Performer" recursively:NO]];
+    [superview setNodeToMove:[scene.rootNode childNodeWithName:@"Camera-Audience" recursively:NO]];
 }
 
 - (void) loadMocap

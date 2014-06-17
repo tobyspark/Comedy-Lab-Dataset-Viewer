@@ -110,7 +110,7 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     
     SCNCamera *performerCamera = [SCNCamera camera];
     [performerCamera setAutomaticallyAdjustsZRange:YES];
-    focalLength = 70;
+    focalLength = 59;
     [performerCamera setXFov: (180.0*35.0) / (M_PI*focalLength)];
     
     SCNNode *performerCameraNode = [SCNNode node];
@@ -118,10 +118,10 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     [performerCameraNode setCamera:performerCamera];
     
     cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 0, 0, 1);
-    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(80), 1, 0, 0);
+    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(79), 1, 0, 0);
     [performerCameraNode setTransform:cameraOrientation];
     
-    [performerCameraNode setPosition:SCNVector3Make(9000, 0, 2400)];
+    [performerCameraNode setPosition:SCNVector3Make(7500, 0, 2200)];
     
     [scene.rootNode addChildNode:performerCameraNode];
     
@@ -132,15 +132,12 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     
     SCNNode *orthoCameraNode = [SCNNode node];
     orthoCameraNode.name = @"Camera-Orthographic";
-    orthoCameraNode.position = SCNVector3Make(2000, 0, 6000); // a guess for now
+    orthoCameraNode.position = SCNVector3Make(2000, 0, 6000);
     [orthoCameraNode setCamera:orthoCamera];
     
     [scene.rootNode addChildNode:orthoCameraNode];
     
     // Add in floor, as a visual cue for setting camera
-//    SCNNode *floor = [SCNNode nodeWithGeometry:[SCNPlane planeWithWidth:6000 height:5000]];
-//    floor.position = SCNVector3Make(3000, 0, 0);
-//    [scene.rootNode addChildNode:floor];
     
     for (CGFloat y = -2500; y <= 2500; y += 500)
     {
@@ -148,7 +145,12 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
         line.position = SCNVector3Make(3000, y, 0);
         [scene.rootNode addChildNode:line];
     }
-
+    for (CGFloat x = 0; x <= 6000; x += 500)
+    {
+        SCNNode *line = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:5 height:500 length:5 chamferRadius:0]];
+        line.position = SCNVector3Make(x, 0, 0);
+        [scene.rootNode addChildNode:line];
+    }
     
     // Add in a light.
     // Use diffuse rather than spot as we want to see the arrows, but set it approx where spotlight is so arrows light vaugely as per scene.
@@ -325,6 +327,31 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
         rotationAnimation.values = subjectRotationArray[i];
         rotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
         [subjectNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
+        
+        [self.rootNode addChildNode:subjectNode];
+    }
+    
+    // Add in guide lines for subjects
+    for (NSUInteger i = 0; i < subjects; i++)
+    {
+        SCNNode *subjectNode = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:5 height:5 length:1000 chamferRadius:0]];
+        
+        NSMutableArray *positionArray = [NSMutableArray arrayWithCapacity:[subjectPositionArray[i] count]];
+        [subjectPositionArray[i] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            SCNVector3 xyz = [obj SCNVector3Value];
+            SCNVector3 pos = SCNVector3Make(xyz.x, xyz.y, 500);
+            [positionArray addObject:[NSValue valueWithSCNVector3:pos]];
+        }];
+        
+        CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+        positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+        positionAnimation.duration = finalTime;
+        positionAnimation.removedOnCompletion = NO;
+        positionAnimation.keyTimes = timeArray;
+        positionAnimation.calculationMode = kCAAnimationDiscrete;
+        positionAnimation.values = positionArray;
+        positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+        [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
         
         [self.rootNode addChildNode:subjectNode];
     }
