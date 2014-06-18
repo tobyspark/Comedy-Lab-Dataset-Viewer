@@ -91,6 +91,10 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
     [self.superLayer addSublayer:self.audienceSceneLayer];
     [self.superLayer addSublayer:self.performerSceneLayer];
     
+    // TASK: Set view menu
+    NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
+    [viewMenu setDelegate:self];
+    
     // TASK: Get going for user
     self.scene = [SCNScene comedyLabScene];
     [self performSelectorInBackground:@selector(loadMocap) withObject:nil];
@@ -244,34 +248,6 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
     NSData *povData = [NSData dataWithBytes:&transform length:sizeof(CATransform3D)];
     
     [self.freeSceneViewPovs addObject:povData];
-    
-    [self syncPovsWithViewMenu];
-}
-
-- (void) syncPovsWithViewMenu
-{
-    NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
-    
-    NSUInteger startIndexForPovs = 1;
-    NSUInteger povsCount = [self.freeSceneViewPovs count];
-    NSUInteger menuitemsCount = [[viewMenu itemArray] count] - startIndexForPovs;
-    
-    while (povsCount < menuitemsCount)
-    {
-        menuitemsCount--;
-        [viewMenu removeItemAtIndex:menuitemsCount];
-    }
-    
-    while (povsCount > menuitemsCount)
-    {
-        NSString *povString = [NSString stringWithFormat:@"Camera Pos %lu", (unsigned long)menuitemsCount + startIndexForPovs];
-        NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)menuitemsCount + startIndexForPovs];
-        
-        NSMenuItem *newPovMenuItem = [[NSMenuItem alloc] initWithTitle:povString action:@selector(freeSceneViewSetCurrentPov:) keyEquivalent:povKey];
-        
-        [viewMenu addItem:newPovMenuItem];
-        menuitemsCount++;
-    }
 }
 
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender
@@ -301,6 +277,35 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
 + (BOOL)autosavesInPlace
 {
     return YES;
+}
+
+#pragma mark - NSMenuDelegate
+
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    // CLDDocument is delegate only for the view menu
+    NSMenu *viewMenu = menu;
+    
+    NSUInteger startIndexForPovs = 1;
+    NSUInteger povsCount = [self.freeSceneViewPovs count];
+    NSUInteger menuitemsCount = [[viewMenu itemArray] count] - startIndexForPovs;
+    
+    while (povsCount < menuitemsCount)
+    {
+        [viewMenu removeItemAtIndex:menuitemsCount];
+        menuitemsCount--;
+    }
+    
+    while (povsCount > menuitemsCount)
+    {
+        NSString *povString = [NSString stringWithFormat:@"Camera Pos %lu", (unsigned long)menuitemsCount + startIndexForPovs];
+        NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)menuitemsCount + startIndexForPovs];
+        
+        NSMenuItem *newPovMenuItem = [[NSMenuItem alloc] initWithTitle:povString action:@selector(freeSceneViewSetCurrentPov:) keyEquivalent:povKey];
+        
+        [viewMenu addItem:newPovMenuItem];
+        menuitemsCount++;
+    }
 }
 
 #pragma mark - Package Support
@@ -363,7 +368,6 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
         if (datasetPath) self.datasetURL = [NSURL fileURLWithPath:datasetPath];
         
         self.freeSceneViewPovs = [metadata objectForKey:CLDMetadataKeyViewPovs];
-        [self syncPovsWithViewMenu];
     }
     
     return metadataSuccess;

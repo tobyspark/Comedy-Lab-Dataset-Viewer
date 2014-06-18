@@ -13,7 +13,7 @@
 #import "CLDScene.h"
 #import "CLDView.h"
 
-@interface CLDDocument : NSDocument
+@interface CLDDocument : NSDocument <NSMenuDelegate>
 
 @property (strong) NSURL *movieURL;
 @property (strong) NSURL *mocapURL;
