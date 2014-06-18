@@ -141,6 +141,13 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="View" id="HyV-fh-RgO">
                         <items>
+                            <menuItem title="Hide audience" id="1F7-8c-Uwz">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleAudienceMask:" target="-1" id="Gq4-Vs-bJC"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="c8Y-3X-aVf"/>
                             <menuItem title="Add viewpoint" id="kYa-og-5yR">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -149,6 +156,9 @@
                             </menuItem>
                         </items>
                     </menu>
+                    <connections>
+                        <action selector="toggleAudienceMask:" target="-1" id="WM6-Ey-SnW"/>
+                    </connections>
                 </menuItem>
                 <menuItem title="Window" id="aUF-d1-5bR">
                     <modifierMask key="keyEquivalentModifierMask"/>

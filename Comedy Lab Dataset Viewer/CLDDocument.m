@@ -23,6 +23,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
 
 @property (weak)   CALayer          *superLayer;
 @property (strong) AVPlayerView     *playerView;
+@property (strong) CALayer          *playerMaskLayer;
 @property (strong) SCNLayer         *audienceSceneLayer;
 @property (strong) SCNLayer         *performerSceneLayer;
 @property (strong) SCNView          *freeSceneView;
@@ -88,8 +89,13 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     [self setPerformerSceneLayer:[SCNLayer layer]];
     [self.performerSceneLayer setAutoenablesDefaultLighting:YES];
 
+    [self setPlayerMaskLayer:[CALayer layer]];
+    [self.playerMaskLayer setBackgroundColor:CGColorCreateGenericGray(0, 1)];
+    [self.playerMaskLayer setOpacity:0];
+    
     // TASK: Set layers into tree
     
+    [self.superLayer addSublayer:self.playerMaskLayer];
     [self.superLayer addSublayer:self.audienceSceneLayer];
     [self.superLayer addSublayer:self.performerSceneLayer];
     
@@ -277,9 +283,16 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     [self.freeSceneView.pointOfView addAnimation:povAnimation forKey:nil];
 }
 
-+ (BOOL)autosavesInPlace
+- (IBAction) toggleAudienceMask:(id)sender
 {
-    return YES;
+    if ([sender state] == NSOnState)
+    {
+        [self.playerMaskLayer setOpacity:0];
+    }
+    else
+    {
+        [self.playerMaskLayer setOpacity:1];
+    }
 }
 
 #pragma mark - NSMenuDelegate
@@ -289,7 +302,9 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     // CLDDocument is delegate only for the view menu
     NSMenu *viewMenu = menu;
     
-    NSUInteger startIndexForPovs = 1;
+    [[viewMenu itemWithTitle:@"Hide audience"] setState:self.playerMaskLayer.opacity == 1.0 ? NSOnState : NSOffState];
+    
+    NSUInteger startIndexForPovs = 3;
     NSUInteger povsCount = [self.freeSceneViewPovs count];
     NSUInteger menuitemsCount = [[viewMenu itemArray] count] - startIndexForPovs;
     
@@ -388,6 +403,11 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     return metadataSuccess;
 }
 
++ (BOOL)autosavesInPlace
+{
+    return YES;
+}
+
 #pragma mark CALayoutManager Delegate
 
 - (void)layoutSublayersOfLayer:(CALayer *)layer
@@ -418,6 +438,8 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
         
         CGRect performerRect = CGRectMake(videoRect.origin.x, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
         [self.performerSceneLayer setFrame:performerRect];
+        
+        [self.playerMaskLayer setFrame:audienceRect];
         
         // This is a view not layer, but no-need to reinvent the wheel...
         CGRect freeRect = CGRectMake(layerRect.origin.x, layerRect.origin.y, layerRect.size.width, layerRect.size.height - videoRect.size.height);

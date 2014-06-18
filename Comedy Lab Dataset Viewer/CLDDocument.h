@@ -26,5 +26,6 @@
 - (IBAction) chooseAnalysisDataset:(id)sender;
 - (IBAction) freeSceneViewAddCurrentPov:(id)sender;
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender;
+- (IBAction) toggleAudienceMask:(id)sender;
 
 @end
