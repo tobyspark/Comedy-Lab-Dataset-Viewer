@@ -14,9 +14,12 @@
 
 #define kCLDdatumPerSubject 6
 
-#define kCLDRowToRowSpacing 1100
-#define kCLDRowFirstOffset 2400
-#define kCLDSeatToSeatSpacing 900
+#define kCLDRowToRowSpacing 1100.0
+#define kCLDRowFirstOffset 2400.0
+#define kCLDSeatToSeatSpacing 900.0
+
+#define kCLDBreathingBeltMultiplier (500.0 / 0.02)
+#define kCLDHappinessMultiplier 5.0
 
 static inline void rotationFromVecToVec(vec4 angleAxisVec, vec3 fromVec, vec3 toVec)
 {
@@ -158,7 +161,7 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
         SCNNode *label = [SCNNode nodeWithGeometry:[SCNText textWithString:[NSString stringWithFormat:@"%02lu", (unsigned long)seat]
                                                             extrusionDepth:10]];
         [seatNode addChildNode:label];
-        NSLog(@"Seat: %@, x:%f, y:%f", seatName, x, y);
+
         [scene.rootNode addChildNode:seatNode];
     }
         
@@ -447,7 +450,7 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     
     NSValue * const lightStateLit = [NSValue valueWithSCNVector3:SCNVector3Make(1, 1, 1)];
     NSValue * const lightStateUnlit = [NSValue valueWithSCNVector3:SCNVector3Make(0.1, 0.1, 0.1)];
-    NSValue * const lightStateUnknown = [NSValue valueWithSCNVector3:SCNVector3Make(0, 0, 0)];
+    NSValue * const SCNVec3Zero = [NSValue valueWithSCNVector3:SCNVector3Make(0, 0, 0)];
     
     NSMutableDictionary *audienceData = [NSMutableDictionary dictionaryWithCapacity:16];
     
@@ -500,22 +503,24 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
         // Create and pre-populate data dict
         
         NSMutableDictionary *subjectData = [NSMutableDictionary dictionaryWithCapacity:10];
-        
-        {
-            NSMutableArray *array = [NSMutableArray arrayWithCapacity:timeStampCount];
-            for (NSUInteger i = 0; i < timeStampCount; ++i)
-            {
-                [array addObject:lightStateUnknown];
-            }
-            [subjectData setObject:array forKey:@"lightState"];
-        }
-        
+        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"lightState"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"laughState"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"breathingBelt"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"happiness"];
         
+        for (NSString* key in subjectData)
+        {
+            NSMutableArray *array = [subjectData objectForKey:key];
+            for (NSUInteger i = 0; i < timeStampCount; ++i)
+            {
+                [array addObject:SCNVec3Zero];
+            }
+        }
+        
+        // Add in associated nodes
+        
         [subjectData setObject:seatNode forKey:@"seatNode"];
-        [subjectData setObject:mocapNode forKey:@"audienceNode"];
+        [subjectData setObject:mocapNode forKey:@"subjectNode"];
         
         return subjectData;
     };
@@ -530,6 +535,8 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     {
         NSArray *entries = [line componentsSeparatedByString:@", "];
         
+        // Subject, #0
+        
         NSString *subjectName = entries[0];
         
         NSDictionary *subjectData = [audienceData objectForKey:subjectName];
@@ -539,17 +546,48 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
             [audienceData setObject:subjectData forKey:subjectName];
         }
         
+        // TimeStamp, #1
+        
         CGFloat time = [entries[1] doubleValue];
         NSUInteger timeIndex = round(((time - startTime) / stepTime));
         //NSLog(@"time %@ gets via index %@", entries[1], timeArray[timeIndex]);
         
-        NSValue* lightState;
-        if ([entries[2] hasPrefix:@"Lit"]) lightState = lightStateLit;
-        else if ([entries[2] hasPrefix:@"Unlit"]) lightState = lightStateUnlit;
-        else lightState = lightStateUnknown;
+        // Light State, #2
+        {
+            NSValue* value;
+            if ([entries[2] hasPrefix:@"Lit"]) value = lightStateLit;
+            else if ([entries[2] hasPrefix:@"Unlit"]) value = lightStateUnlit;
+            if (value)
+            {
+                NSMutableArray *array = [subjectData objectForKey:@"lightState"];
+                [array replaceObjectAtIndex:timeIndex withObject:value];
+            }
+        }
+        // Laugh State, #3
         
-        NSMutableArray *lightStateArray = [subjectData objectForKey:@"lightState"];
-        [lightStateArray replaceObjectAtIndex:timeIndex withObject:lightState];
+        // Breathing Belt, #4
+        {
+            NSMutableArray *array = [subjectData objectForKey:@"breathingBelt"];
+            NSString *entryString = entries[4];
+            if (![entryString isEqualToString:@"n/a"])
+            {
+                CGFloat entry = [entryString doubleValue];
+                NSValue *value = [NSValue valueWithSCNVector3:SCNVector3Make(1, 1, fabs(entry*kCLDBreathingBeltMultiplier))];
+                [array replaceObjectAtIndex:timeIndex withObject:value];
+            }
+        }
+        
+        // Happiness, #5
+        {
+            NSMutableArray *array = [subjectData objectForKey:@"happiness"];
+            NSString *entryString = entries[5];
+            if (![entryString isEqualToString:@"n/a"])
+            {
+                CGFloat entry = [entryString doubleValue];
+                NSValue *value = [NSValue valueWithSCNVector3:SCNVector3Make(1, 1, entry*kCLDHappinessMultiplier)];
+                [array replaceObjectAtIndex:timeIndex withObject:value];
+            }
+        }
     }
     
     // Add in subjects: an arrow with position and rotation set over time.
@@ -558,21 +596,64 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     {
         NSDictionary *subjectData = [audienceData objectForKey:subjectName];
         
-        NSArray *lightStateArray = [subjectData objectForKey:@"lightState"];
+        // Light State
+        {
+            NSArray *array = [subjectData objectForKey:@"lightState"];
+            
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"scale"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = endTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = array;
+            animation.usesSceneTimeBase = YES;
+            
+            SCNNode *lightStateNode = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:500 height:1]];
+            [lightStateNode setRotation:SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90))];
+            [lightStateNode addAnimation:animation forKey:@"fingers crossed for lightState"];
+            [[subjectData objectForKey:@"seatNode"] addChildNode:lightStateNode];
+        }
         
-        CAKeyframeAnimation *lightStateAnimation = [CAKeyframeAnimation animationWithKeyPath:@"scale"];
-        lightStateAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-        lightStateAnimation.duration = endTime;
-        lightStateAnimation.removedOnCompletion = NO;
-        lightStateAnimation.keyTimes = timeArray;
-        lightStateAnimation.calculationMode = kCAAnimationDiscrete;
-        lightStateAnimation.values = lightStateArray;
-        lightStateAnimation.usesSceneTimeBase = YES;
+        // Breathing Belts
+        {
+            NSArray *array = [subjectData objectForKey:@"breathingBelt"];
+            
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"scale"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = endTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = array;
+            animation.usesSceneTimeBase = YES;
+            
+            SCNNode *node = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:40 height:40 length:1 chamferRadius:0]];
+            [node setPosition:SCNVector3Make(-60, 0, 0.5)];
+            [node setPivot:CATransform3DMakeTranslation(0, 0, -0.5)];
+            [node addAnimation:animation forKey:@"fingers crossed for breathingBelt"];
+            [[subjectData objectForKey:@"subjectNode"] addChildNode:node];
+        }
         
-        SCNNode *lightStateNode = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:500 height:1]];
-        [lightStateNode setRotation:SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90))];
-        [lightStateNode addAnimation:lightStateAnimation forKey:@"fingers crossed for lightState"];
-        [[subjectData objectForKey:@"seatNode"] addChildNode:lightStateNode];
+        // Happiness
+        {
+            NSArray *array = [subjectData objectForKey:@"happiness"];
+            
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"scale"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = endTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = array;
+            animation.usesSceneTimeBase = YES;
+            
+            SCNNode *node = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:40 height:40 length:1 chamferRadius:0]];
+            [node setPosition:SCNVector3Make(-120, 0, 0.5)];
+            [node setPivot:CATransform3DMakeTranslation(0, 0, -0.5)];
+            [node addAnimation:animation forKey:@"fingers crossed for happiness"];
+            [[subjectData objectForKey:@"subjectNode"] addChildNode:node];
+        }
     }
 
     return YES;
