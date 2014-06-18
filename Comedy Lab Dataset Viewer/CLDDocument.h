@@ -18,6 +18,8 @@
 @property (strong) NSURL *movieURL;
 @property (strong) NSURL *mocapURL;
 @property (strong) NSURL *datasetURL;
+@property float movieVolume;
+@property bool movieMuted;
 
 - (IBAction) chooseMovie:(id)sender;
 - (IBAction) chooseMocapData:(id)sender;

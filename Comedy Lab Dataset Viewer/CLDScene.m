@@ -66,10 +66,10 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     return SCNVector4Make(angleAxis[0], angleAxis[1], angleAxis[2], angleAxis[3]);
 }
 
-NSString * const laughStateI = @"Indeterminate";
-NSString * const laughStateN = @"Not Laughing";
-NSString * const laughStateS = @"Smiling";
-NSString * const laughStateL = @"Laughing";
+static NSString * const laughStateI = @"Indeterminate";
+static NSString * const laughStateN = @"Not Laughing";
+static NSString * const laughStateS = @"Smiling";
+static NSString * const laughStateL = @"Laughing";
 
 @interface NSString (ComedyLabAdditions)
 

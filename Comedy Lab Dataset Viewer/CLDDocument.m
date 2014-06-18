@@ -8,12 +8,14 @@
 
 #import "CLDDocument.h"
 
-NSString *CLDSceneFileName = @"Scene.dae";
-NSString *CLDMetadataFileName = @"Metadata.plist";
-NSString *CLDMetadataKeyMoviePath = @"moviePath";
-NSString *CLDMetadataKeyMocapPath = @"mocapPath";
-NSString *CLDMetadataKeyDatasetPath = @"datasetPath";
-NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
+static NSString * const CLDSceneFileName = @"Scene.dae";
+static NSString * const CLDMetadataFileName = @"Metadata.plist";
+static NSString * const CLDMetadataKeyMoviePath = @"moviePath";
+static NSString * const CLDMetadataKeyMocapPath = @"mocapPath";
+static NSString * const CLDMetadataKeyDatasetPath = @"datasetPath";
+static NSString * const CLDMetadataKeyViewPovs = @"freeViewPOVs";
+static NSString * const CLDMetadataKeyVolume = @"volume";
+static NSString * const CLDMetadataKeyMuted = @"muted";
 
 @interface CLDDocument ()
 
@@ -101,7 +103,6 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
     [self performSelectorInBackground:@selector(loadDataset) withObject:nil];
     [self loadMovie];
     
-    [self.playerView.player setMuted:YES]; // for development sanity
     [self.playerView.player play];
 }
 
@@ -177,6 +178,8 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
         }];
         
         [self movieSeekToSceneStart];
+        
+        [player setVolume:self.movieVolume];
         
         self.playerView.player = player;
         
@@ -332,6 +335,12 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
     NSString *datasetPath = [self.datasetURL path];
     if (datasetPath) [metadata setObject:datasetPath forKey:CLDMetadataKeyDatasetPath];
     
+    NSNumber *movieVolume = [NSNumber numberWithFloat:[self.playerView.player volume]];
+    [metadata setObject:movieVolume forKey:CLDMetadataKeyVolume];
+    
+    NSNumber *movieMuted = [NSNumber numberWithBool:[self.playerView.player isMuted]];
+    [metadata setObject:movieMuted forKey:CLDMetadataKeyMuted];
+    
     [metadata setObject:self.freeSceneViewPovs forKey:CLDMetadataKeyViewPovs];
     
     metadataSuccess = [metadata writeToURL:metadataURL atomically:YES];
@@ -358,6 +367,12 @@ NSString *CLDMetadataKeyViewPovs = @"freeViewPOVs";
     metadataSuccess = (metadata != nil);
     if (metadataSuccess)
     {
+        NSNumber *movieVolume = [metadata objectForKey:CLDMetadataKeyVolume];
+        if (movieVolume) self.movieVolume = [movieVolume floatValue];
+        
+        NSNumber *movieMuted = [metadata objectForKey:CLDMetadataKeyMuted];
+        if (movieMuted) self.movieMuted = [movieVolume boolValue];
+        
         NSString *moviePath = [metadata objectForKey:CLDMetadataKeyMoviePath];
         if (moviePath) self.movieURL = [NSURL fileURLWithPath:moviePath];
         
