@@ -14,6 +14,10 @@
 
 #define kCLDdatumPerSubject 6
 
+#define kCLDRowToRowSpacing 1100
+#define kCLDRowFirstOffset 2400
+#define kCLDSeatToSeatSpacing 900
+
 static inline void rotationFromVecToVec(vec4 angleAxisVec, vec3 fromVec, vec3 toVec)
 {
     vec3 startVec = {fromVec[0], fromVec[1], fromVec[2]};
@@ -137,6 +141,27 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     
     [scene.rootNode addChildNode:orthoCameraNode];
     
+    // Add in approximate audience positions, aka seats
+    
+    for (NSUInteger seat = 1; seat <= 16; ++seat)
+    {
+        NSString *seatName = [NSString stringWithFormat:@"Seat %02lu", (unsigned long)seat];
+        NSUInteger row = (seat - 1) / 4;
+        NSUInteger col = (seat - 1) % 4;
+        CGFloat x = kCLDRowFirstOffset + (kCLDRowToRowSpacing * row);
+        CGFloat y = -1 * ((col - 1.5) * kCLDSeatToSeatSpacing);
+        
+        SCNNode *seatNode = [SCNNode node];
+        [seatNode setName:seatName];
+        [seatNode setPosition:SCNVector3Make(x, y, 0)];
+        
+        SCNNode *label = [SCNNode nodeWithGeometry:[SCNText textWithString:[NSString stringWithFormat:@"%02lu", (unsigned long)seat]
+                                                            extrusionDepth:10]];
+        [seatNode addChildNode:label];
+        NSLog(@"Seat: %@, x:%f, y:%f", seatName, x, y);
+        [scene.rootNode addChildNode:seatNode];
+    }
+        
     // Add in floor, as a visual cue for setting camera
     
     for (CGFloat y = -2500; y <= 2500; y += 500)
@@ -420,40 +445,82 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
         [timeArray addObject:@(startTime + i*stepTime)];
     }
     
-    NSArray *audienceNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
-        return [[child name] hasPrefix:@"Audience"];
-    }];
+    NSValue * const lightStateLit = [NSValue valueWithSCNVector3:SCNVector3Make(1, 1, 1)];
+    NSValue * const lightStateUnlit = [NSValue valueWithSCNVector3:SCNVector3Make(0.1, 0.1, 0.1)];
+    NSValue * const lightStateUnknown = [NSValue valueWithSCNVector3:SCNVector3Make(0, 0, 0)];
     
-    NSMutableDictionary *audienceData = [NSMutableDictionary dictionaryWithCapacity:[audienceNodes count]];
-    for (SCNNode *node in audienceNodes)
+    NSMutableDictionary *audienceData = [NSMutableDictionary dictionaryWithCapacity:16];
+    
+    NSDictionary* (^subjectDataWithName)(NSString*) = ^NSDictionary*(NSString* name)
     {
+        // Find mocap and seat nodes
+        
+        NSString *nameNumber = [name componentsSeparatedByString:@" "][1];
+        SCNNode *seatNode = nil;
+        SCNNode *mocapNode = nil;
+        
+        NSArray *audienceNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+            return [[child name] hasPrefix:@"Audience"];
+        }];
+        for (SCNNode *node in audienceNodes)
+        {
+            NSString *audienceNameNumber = [[node name] componentsSeparatedByString:@"_"][1];
+            if ([nameNumber isEqualToString:audienceNameNumber])
+            {
+                mocapNode = node;
+                continue;
+            }
+        }
+        
+        NSArray *seatNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+            return [[child name] hasPrefix:@"Seat"];
+        }];
+        for (SCNNode *node in seatNodes)
+        {
+            NSString *seatNameNumber = [[node name] componentsSeparatedByString:@" "][1];
+            if ([nameNumber isEqualToString:seatNameNumber])
+            {
+                seatNode = node;
+                continue;
+            }
+        }
+        
+        // Sanity checks
+        if (!seatNode)
+        {
+            NSLog(@"Seat node not found for %@, aborting", name);
+            return nil;
+        }
+        if (!mocapNode)
+        {
+            NSLog(@"Mocap node not found for %@, using seat node instead", name);
+            mocapNode = seatNode;
+        }
+        
+        // Create and pre-populate data dict
+        
         NSMutableDictionary *subjectData = [NSMutableDictionary dictionaryWithCapacity:10];
-        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"lightState"];
+        
+        {
+            NSMutableArray *array = [NSMutableArray arrayWithCapacity:timeStampCount];
+            for (NSUInteger i = 0; i < timeStampCount; ++i)
+            {
+                [array addObject:lightStateUnknown];
+            }
+            [subjectData setObject:array forKey:@"lightState"];
+        }
+        
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"laughState"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"breathingBelt"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"happiness"];
         
-        for (NSString* key in subjectData)
-        {
-            NSMutableArray *array = [subjectData objectForKey:key];
-            for (NSUInteger i = 0; i < timeStampCount; ++i)
-            {
-                [array addObject:[NSNull null]];
-            }
-        }
+        [subjectData setObject:seatNode forKey:@"seatNode"];
+        [subjectData setObject:mocapNode forKey:@"audienceNode"];
         
-        NSString *nameWithoutSpace = [[node name] stringByReplacingOccurrencesOfString:@"_" withString:@" "];
-        [audienceData setObject:subjectData forKey:nameWithoutSpace];
-    }
-
+        return subjectData;
+    };
+    
     // Setup scanner
-    
-    
-    NSString * const lightStateLit = @"Lit";
-    NSString * const lightStateUnlit = @"Unl";
-    NSString * const lightStateUnknown = @"";
-    
-    NSMutableSet *missingSubjects = [NSMutableSet setWithCapacity:[audienceData count]];
     
     // Can't scan through directly as some numerical values are 'n/a', so take line and split into array
     NSString *line = nil;
@@ -463,31 +530,49 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     {
         NSArray *entries = [line componentsSeparatedByString:@", "];
         
-        NSString *subject = entries[0];
+        NSString *subjectName = entries[0];
+        
+        NSDictionary *subjectData = [audienceData objectForKey:subjectName];
+        if (!subjectData)
+        {
+            subjectData = subjectDataWithName(subjectName);
+            [audienceData setObject:subjectData forKey:subjectName];
+        }
+        
         CGFloat time = [entries[1] doubleValue];
         NSUInteger timeIndex = round(((time - startTime) / stepTime));
         //NSLog(@"time %@ gets via index %@", entries[1], timeArray[timeIndex]);
         
-        NSString* lightState;
-        if ([entries[2] hasPrefix:lightStateLit]) lightState = lightStateLit;
-        else if ([entries[2] hasPrefix: lightStateUnlit]) lightState = lightStateUnlit;
+        NSValue* lightState;
+        if ([entries[2] hasPrefix:@"Lit"]) lightState = lightStateLit;
+        else if ([entries[2] hasPrefix:@"Unlit"]) lightState = lightStateUnlit;
         else lightState = lightStateUnknown;
-        
-        
-        NSDictionary *subjectData = [audienceData objectForKey:subject];
-        if (!subjectData)
-        {
-            [missingSubjects addObject:subject];
-            continue;
-        }
         
         NSMutableArray *lightStateArray = [subjectData objectForKey:@"lightState"];
         [lightStateArray replaceObjectAtIndex:timeIndex withObject:lightState];
     }
     
-    if ([missingSubjects count] > 0)
+    // Add in subjects: an arrow with position and rotation set over time.
+    
+    for (NSString* subjectName in audienceData)
     {
-        NSLog(@"Data omitted: scene missing subjects: %@", missingSubjects);
+        NSDictionary *subjectData = [audienceData objectForKey:subjectName];
+        
+        NSArray *lightStateArray = [subjectData objectForKey:@"lightState"];
+        
+        CAKeyframeAnimation *lightStateAnimation = [CAKeyframeAnimation animationWithKeyPath:@"scale"];
+        lightStateAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+        lightStateAnimation.duration = endTime;
+        lightStateAnimation.removedOnCompletion = NO;
+        lightStateAnimation.keyTimes = timeArray;
+        lightStateAnimation.calculationMode = kCAAnimationDiscrete;
+        lightStateAnimation.values = lightStateArray;
+        lightStateAnimation.usesSceneTimeBase = YES;
+        
+        SCNNode *lightStateNode = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:500 height:1]];
+        [lightStateNode setRotation:SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90))];
+        [lightStateNode addAnimation:lightStateAnimation forKey:@"fingers crossed for lightState"];
+        [[subjectData objectForKey:@"seatNode"] addChildNode:lightStateNode];
     }
 
     return YES;
