@@ -22,7 +22,9 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
 @property (strong, nonatomic) SCNScene *scene;
 
 @property (weak)   CALayer          *superLayer;
+@property (strong) AVPlayer         *player;
 @property (strong) AVPlayerView     *playerView;
+@property (strong) AVPlayerLayer    *playerLayer;
 @property (strong) CALayer          *playerMaskLayer;
 @property (strong) SCNLayer         *audienceSceneLayer;
 @property (strong) SCNLayer         *performerSceneLayer;
@@ -71,6 +73,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     // Use AVPlayerView rather than AVPlayerLayer as this gives us UI
     [self setPlayerView:[[AVPlayerView alloc] initWithFrame:aController.window.frame]];
     [self.playerView setControlsStyle:AVPlayerViewControlsStyleInline];
+    [self.playerView setPlayer:self.player];
     
     [aController.window.contentView addSubview:self.playerView];
     
@@ -88,6 +91,9 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     
     [self setPerformerSceneLayer:[SCNLayer layer]];
     [self.performerSceneLayer setAutoenablesDefaultLighting:YES];
+    
+    [self setPlayerLayer:[AVPlayerLayer layer]];
+    [self.playerLayer setPlayer:self.player];
 
     [self setPlayerMaskLayer:[CALayer layer]];
     [self.playerMaskLayer setBackgroundColor:CGColorCreateGenericGray(0, 1)];
@@ -95,6 +101,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     
     // TASK: Set layers into tree
     
+    [self.superLayer addSublayer:self.playerLayer];
     [self.superLayer addSublayer:self.playerMaskLayer];
     [self.superLayer addSublayer:self.audienceSceneLayer];
     [self.superLayer addSublayer:self.performerSceneLayer];
@@ -109,7 +116,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     [self performSelectorInBackground:@selector(loadDataset) withObject:nil];
     [self loadMovie];
     
-    [self.playerView.player play];
+    [self.player play];
 }
 
 - (IBAction) chooseMovie:(id)sender
@@ -187,7 +194,11 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
         
         [player setVolume:self.movieVolume];
         
-        self.playerView.player = player;
+        self.player = player;
+        
+        // These should KVO or somesuch...
+        [self.playerView setPlayer:self.player];
+        [self.playerLayer setPlayer:self.player];
         
         NSLog(@"Loaded movie: %@", self.movieURL);
     }
@@ -200,11 +211,11 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
 - (void) movieSeekToSceneStart
 {
     NSTimeInterval startTime = [[self.scene attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
-    NSTimeInterval currentTime = CMTimeGetSeconds([self.playerView.player currentTime]);
+    NSTimeInterval currentTime = CMTimeGetSeconds([self.player currentTime]);
     
     if (currentTime < startTime)
     {
-        [self.playerView.player seekToTime:CMTimeMakeWithSeconds(startTime, 600)];
+        [self.player seekToTime:CMTimeMakeWithSeconds(startTime, 600)];
     }
 }
 
@@ -355,10 +366,10 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     NSString *datasetPath = [self.datasetURL path];
     if (datasetPath) [metadata setObject:datasetPath forKey:CLDMetadataKeyDatasetPath];
     
-    NSNumber *movieVolume = [NSNumber numberWithFloat:[self.playerView.player volume]];
+    NSNumber *movieVolume = [NSNumber numberWithFloat:[self.player volume]];
     [metadata setObject:movieVolume forKey:CLDMetadataKeyVolume];
     
-    NSNumber *movieMuted = [NSNumber numberWithBool:[self.playerView.player isMuted]];
+    NSNumber *movieMuted = [NSNumber numberWithBool:[self.player isMuted]];
     [metadata setObject:movieMuted forKey:CLDMetadataKeyMuted];
     
     [metadata setObject:self.freeSceneViewPovs forKey:CLDMetadataKeyViewPovs];
@@ -435,19 +446,21 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
         CGFloat videoTopAlign = layerRect.origin.y + layerRect.size.height - videoFittedHeight;
         CGRect videoRect = CGRectMake(layerRect.origin.x, videoTopAlign, videoFittedWidth, videoFittedHeight);
         
-        // This is a view not layer, but no-need to reinvent the wheel since switching from AVPlayerLayer to AVPlayerView.
-        [self.playerView setFrame:videoRect];
-        
         CGRect audienceRect = CGRectMake(videoRect.origin.x + videoRect.size.width/2.0, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
-        [self.audienceSceneLayer setFrame:audienceRect];
         
         CGRect performerRect = CGRectMake(videoRect.origin.x, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
+        
+        [self.playerLayer setFrame:videoRect];
+        [self.playerMaskLayer setFrame:audienceRect];
+        [self.audienceSceneLayer setFrame:audienceRect];
         [self.performerSceneLayer setFrame:performerRect];
         
-        [self.playerMaskLayer setFrame:audienceRect];
-        
         // This is a view not layer, but no-need to reinvent the wheel...
-        CGRect freeRect = CGRectMake(layerRect.origin.x, layerRect.origin.y, layerRect.size.width, layerRect.size.height - videoRect.size.height);
+        CGFloat controlsHeight = 23;
+        CGRect controlsRect = CGRectMake(layerRect.origin.x, layerRect.origin.y, layerRect.size.width, controlsHeight);
+        CGRect freeRect = CGRectMake(layerRect.origin.x, layerRect.origin.y + controlsHeight, layerRect.size.width, layerRect.size.height - videoRect.size.height);
+        
+        [self.playerView setFrame:controlsRect];
         [self.freeSceneView setFrame:freeRect];
         
         
