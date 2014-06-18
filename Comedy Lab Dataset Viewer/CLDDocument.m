@@ -200,7 +200,12 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
 - (void) movieSeekToSceneStart
 {
     NSTimeInterval startTime = [[self.scene attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
-    [self.playerView.player seekToTime:CMTimeMakeWithSeconds(startTime, 600)];
+    NSTimeInterval currentTime = CMTimeGetSeconds([self.playerView.player currentTime]);
+    
+    if (currentTime < startTime)
+    {
+        [self.playerView.player seekToTime:CMTimeMakeWithSeconds(startTime, 600)];
+    }
 }
 
 - (void) setScene:(SCNScene *)scene
