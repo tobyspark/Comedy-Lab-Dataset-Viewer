@@ -66,6 +66,37 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     return SCNVector4Make(angleAxis[0], angleAxis[1], angleAxis[2], angleAxis[3]);
 }
 
+NSString * const laughStateI = @"Indeterminate";
+NSString * const laughStateN = @"Not Laughing";
+NSString * const laughStateS = @"Smiling";
+NSString * const laughStateL = @"Laughing";
+
+@interface NSString (ComedyLabAdditions)
+
+-(NSNumber*) isLaughStateNotN;
+-(NSNumber*) isLaughStateNotS;
+-(NSNumber*) isLaughStateNotL;
+
+@end
+
+@implementation NSString (ComedyLabAdditions)
+
+-(NSNumber*) isLaughStateNotN
+{
+    return @(self != laughStateN);
+}
+-(NSNumber*) isLaughStateNotS
+{
+    return @(self != laughStateS);
+}
+
+-(NSNumber*) isLaughStateNotL
+{
+    return @(self != laughStateL);
+}
+
+@end
+
 @implementation SCNNode (ComedyLabAdditions)
 
 + (SCNNode *) arrow
@@ -503,8 +534,8 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
         // Create and pre-populate data dict
         
         NSMutableDictionary *subjectData = [NSMutableDictionary dictionaryWithCapacity:10];
+        
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"lightState"];
-        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"laughState"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"breathingBelt"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"happiness"];
         
@@ -515,6 +546,13 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
             {
                 [array addObject:SCNVec3Zero];
             }
+        }
+        
+        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"laughState"];
+        NSMutableArray *array = [subjectData objectForKey:@"laughState"];
+        for (NSUInteger i = 0; i < timeStampCount; ++i)
+        {
+            [array addObject:laughStateI];
         }
         
         // Add in associated nodes
@@ -563,7 +601,20 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
                 [array replaceObjectAtIndex:timeIndex withObject:value];
             }
         }
+        
         // Laugh State, #3
+        {
+            NSString* value;
+            if ([entries[3] isEqualToString:laughStateN]) value = laughStateN;
+            else if ([entries[3] isEqualToString:laughStateS]) value = laughStateS;
+            else if ([entries[3] isEqualToString:laughStateL]) value = laughStateL;
+            if (value)
+            {
+                NSMutableArray *array = [subjectData objectForKey:@"laughState"];
+                [array replaceObjectAtIndex:timeIndex withObject:value];
+            }
+        }
+        
         
         // Breathing Belt, #4
         {
@@ -591,6 +642,10 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
     }
     
     // Add in subjects: an arrow with position and rotation set over time.
+    SCNGeometry *box = [SCNBox boxWithWidth:40 height:40 length:1 chamferRadius:0];
+    SCNGeometry *geoN = [SCNText textWithString:@"N" extrusionDepth:1];
+    SCNGeometry *geoS = [SCNText textWithString:@"S" extrusionDepth:1];
+    SCNGeometry *geoL = [SCNText textWithString:@"L" extrusionDepth:1];
     
     for (NSString* subjectName in audienceData)
     {
@@ -615,6 +670,71 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
             [[subjectData objectForKey:@"seatNode"] addChildNode:lightStateNode];
         }
         
+        // Laugh State
+        {
+            NSArray *array = [subjectData objectForKey:@"laughState"];
+            
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = endTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = [array valueForKey:@"isLaughStateNotN"];
+            animation.usesSceneTimeBase = YES;
+            
+            SCNNode *node = [SCNNode nodeWithGeometry:geoN];
+            CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 1, 0, 0);
+            transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(90), 0, -1, 0);
+            [node setTransform:transform];
+            [node setScale:SCNVector3Make(4, 4, 40)];
+            [node setPosition:SCNVector3Make(0, 200, -40)];
+            [node addAnimation:animation forKey:@"fingers crossed for geoN"];
+            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
+        }
+        {
+            NSArray *array = [subjectData objectForKey:@"laughState"];
+            
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = endTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = [array valueForKey:@"isLaughStateNotS"];
+            animation.usesSceneTimeBase = YES;
+            
+            SCNNode *node = [SCNNode nodeWithGeometry:geoS];
+            CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 1, 0, 0);
+            transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(90), 0, -1, 0);
+            [node setTransform:transform];
+            [node setScale:SCNVector3Make(4, 4, 40)];
+            [node setPosition:SCNVector3Make(0, 200, -40)];
+            [node addAnimation:animation forKey:@"fingers crossed for geoS"];
+            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
+        }
+        {
+            NSArray *array = [subjectData objectForKey:@"laughState"];
+            
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = endTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = [array valueForKey:@"isLaughStateNotL"];
+            animation.usesSceneTimeBase = YES;
+            
+            SCNNode *node = [SCNNode nodeWithGeometry:geoL];
+            CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 1, 0, 0);
+            transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(90), 0, -1, 0);
+            [node setTransform:transform];
+            [node setScale:SCNVector3Make(4, 4, 40)];
+            [node setPosition:SCNVector3Make(0, 200, -40)];
+            [node addAnimation:animation forKey:@"fingers crossed for geoL"];
+            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
+        }
+        
         // Breathing Belts
         {
             NSArray *array = [subjectData objectForKey:@"breathingBelt"];
@@ -628,11 +748,11 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
             animation.values = array;
             animation.usesSceneTimeBase = YES;
             
-            SCNNode *node = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:40 height:40 length:1 chamferRadius:0]];
-            [node setPosition:SCNVector3Make(-60, 0, 0.5)];
+            SCNNode *node = [SCNNode nodeWithGeometry:box];
+            [node setPosition:SCNVector3Make(0, -60, 0.5)];
             [node setPivot:CATransform3DMakeTranslation(0, 0, -0.5)];
             [node addAnimation:animation forKey:@"fingers crossed for breathingBelt"];
-            [[subjectData objectForKey:@"subjectNode"] addChildNode:node];
+            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
         }
         
         // Happiness
@@ -648,11 +768,11 @@ static inline SCNVector4 rotateCameraToVec(float x, float y, float z)
             animation.values = array;
             animation.usesSceneTimeBase = YES;
             
-            SCNNode *node = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:40 height:40 length:1 chamferRadius:0]];
-            [node setPosition:SCNVector3Make(-120, 0, 0.5)];
+            SCNNode *node = [SCNNode nodeWithGeometry:box];
+            [node setPosition:SCNVector3Make(0, -120, 0.5)];
             [node setPivot:CATransform3DMakeTranslation(0, 0, -0.5)];
             [node addAnimation:animation forKey:@"fingers crossed for happiness"];
-            [[subjectData objectForKey:@"subjectNode"] addChildNode:node];
+            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
         }
     }
 
