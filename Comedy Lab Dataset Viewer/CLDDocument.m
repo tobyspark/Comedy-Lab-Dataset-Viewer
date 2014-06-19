@@ -281,9 +281,8 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     
     NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
     
-    // 0 = Add menuitem
-    // 1 = captured POV, array index 0
-    NSUInteger povIndexToRecall = [viewMenu indexOfItem:sender] - 1;
+    NSUInteger startIndexForPovs = 3;
+    NSUInteger povIndexToRecall = [viewMenu indexOfItem:sender] - startIndexForPovs;
     
     // Use NSData as [NSValue CATransform3DValue] can't be archived by NSDictionary or NSKeyedArchiver
     NSData *recalledPovData = [self.freeSceneViewPovs objectAtIndex:povIndexToRecall];
@@ -332,8 +331,8 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     
     while (povsCount > menuitemsCount)
     {
-        NSString *povString = [NSString stringWithFormat:@"Camera Pos %lu", (unsigned long)menuitemsCount + startIndexForPovs];
-        NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)menuitemsCount + startIndexForPovs];
+        NSString *povString = [NSString stringWithFormat:@"Camera Pos %lu", (unsigned long)menuitemsCount + 1];
+        NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)menuitemsCount + 1];
         
         NSMenuItem *newPovMenuItem = [[NSMenuItem alloc] initWithTitle:povString action:@selector(freeSceneViewSetCurrentPov:) keyEquivalent:povKey];
         
