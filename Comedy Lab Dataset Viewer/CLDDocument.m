@@ -289,13 +289,13 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     CATransform3D recalledTransform;
     [recalledPovData getBytes:&recalledTransform length:sizeof(CATransform3D)];
     
-    CABasicAnimation *povAnimation = [CABasicAnimation animationWithKeyPath:@"transform"];
-    povAnimation.fromValue = [NSValue valueWithCATransform3D:self.freeSceneView.pointOfView.transform];
-    povAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    povAnimation.duration = 1.0;
-    
+    // Use implicit animation as CABasicAnimation strangely won't work
+    // But this requires setting duration back to zero for the freeView camera to work
+    [SCNTransaction setAnimationDuration:1];
     [self.freeSceneView.pointOfView setTransform:recalledTransform];
-    [self.freeSceneView.pointOfView addAnimation:povAnimation forKey:nil];
+    [SCNTransaction setCompletionBlock:^{
+        [SCNTransaction setAnimationDuration:0];
+    }];
 }
 
 - (IBAction) toggleAudienceMask:(id)sender
