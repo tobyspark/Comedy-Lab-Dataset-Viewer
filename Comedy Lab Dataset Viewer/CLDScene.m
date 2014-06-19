@@ -415,8 +415,14 @@ static NSString * const laughStateL = @"Laughing";
         [self.rootNode addChildNode:subjectNode];
     }
     
-    [self setAttribute:@(startTime) forKey:SCNSceneStartTimeAttributeKey];
-    [self setAttribute:@(finalTime) forKey:SCNSceneEndTimeAttributeKey];
+    if ([[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue] < 0.0001 || startTime < [[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue])
+    {
+        [self setAttribute:@(startTime) forKey:SCNSceneStartTimeAttributeKey];
+    }
+    if (finalTime > [[self attributeForKey:SCNSceneEndTimeAttributeKey] doubleValue])
+    {
+        [self setAttribute:@(finalTime) forKey:SCNSceneEndTimeAttributeKey];
+    }
     
     return YES;
 }
@@ -439,14 +445,57 @@ static NSString * const laughStateL = @"Laughing";
     // Columns as per StatsConfig.json, ie. https://github.com/tobyspark/ComedyLab/blob/master/Stats%20Exporter/Perf%203%20Data/Performance%203%20StatsConfig.json
     // "fields": ["Light State While", "Laugh State", "Breathing Belt", "Happy", "Sad", "Surprised", "Angry", "MouthOpen", "Distance from Performer", "Angle from Performer", "Movement", "isLookingAt", "isBeingLookedAtByPerformer", "isBeingLookedAtByAudienceMember"]
 
-    if ([[self attributeForKey:SCNSceneEndTimeAttributeKey] doubleValue] < 1.0)
+    NSScanner *scanner = [NSScanner scannerWithString:fileString];
+    
+    // Count number of lines
+    // https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/TextLayout/Tasks/CountLines.html
+    NSUInteger numberOfLines, index, lastIndex = 0, stringLength = [fileString length];
+    for (index = 0, numberOfLines = 0; index < stringLength; numberOfLines++)
     {
-        NSLog(@"Loading dataset when mocap data not loaded. Aborting.");
+        lastIndex = index;
+        index = NSMaxRange([fileString lineRangeForRange:NSMakeRange(index, 0)]);
     }
     
-    NSArray *headerExpectedItems = @[@"AudienceID", @"TimeStamp", @"Light State While", @"Laugh State", @"Breathing Belt", @"Happy", @"Sad", @"Surprised", @"Angry", @"MouthOpen", @"Distance from Performer", @"Angle from Performer", @"Movement", @"isLookingAt", @"isBeingLookedAtByPerformer", @"isBeingLookedAtByAudienceMember"];
+    // Find first and last time entry
+    NSString *line = nil;
+    [scanner scanUpToCharactersFromSet:[NSCharacterSet newlineCharacterSet] intoString:&line]; // header
+    [scanner scanUpToCharactersFromSet:[NSCharacterSet newlineCharacterSet] intoString:&line]; // first entry
     
-    NSScanner *scanner = [NSScanner scannerWithString:fileString];
+    NSArray *entries = [line componentsSeparatedByString:@", "];
+    CGFloat startTime = [entries[1] doubleValue];
+    if (startTime < 0.0001)
+    {
+        // our dataset's data (as opposed to video) starts a few minutes in
+        // doubleValue will return 0 on a non-number string
+        NSLog(@"Start time value zero or could not be parsed");
+        return NO;
+    }
+    if ([[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue] < 0.0001 || startTime < [[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue])
+    {
+        [self setAttribute:@(startTime) forKey:SCNSceneStartTimeAttributeKey];
+    }
+    
+    [scanner setScanLocation:lastIndex];
+    [scanner scanUpToCharactersFromSet:[NSCharacterSet newlineCharacterSet] intoString:&line];
+    
+    entries = [line componentsSeparatedByString:@", "];
+    CGFloat endTime = [entries[1] doubleValue];
+    if (endTime < 0.0001)
+    {
+        NSLog(@"Final time value zero or could not be parsed");
+        return NO;
+    }
+    
+    if (endTime > [[self attributeForKey:SCNSceneEndTimeAttributeKey] doubleValue])
+    {
+        [self setAttribute:@(endTime) forKey:SCNSceneEndTimeAttributeKey];
+    }
+    
+    [scanner setScanLocation:0];
+    
+    // Start scan proper
+    
+    NSArray *headerExpectedItems = @[@"AudienceID", @"TimeStamp", @"Light State While", @"Laugh State", @"Breathing Belt", @"Happy", @"Sad", @"Surprised", @"Angry", @"MouthOpen", @"Distance from Performer", @"Angle from Performer", @"Movement", @"isLookingAt", @"isBeingLookedAtByPerformer", @"isBeingLookedAtByAudienceMember"];
     
     // Parse header row
     NSString *header = nil;
@@ -468,10 +517,8 @@ static NSString * const laughStateL = @"Laughing";
     
     // Create arrays to hold position and rotation over time for all subjects
     
-    CGFloat startTime = [[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
-    CGFloat endTime = [[self attributeForKey:SCNSceneEndTimeAttributeKey] doubleValue];
     CGFloat stepTime = 0.1;
-    NSUInteger timeStampCount = (endTime - startTime) / stepTime;
+    NSUInteger timeStampCount = ((endTime - startTime) / stepTime) + 1;
     
     NSMutableArray *timeArray = [NSMutableArray arrayWithCapacity:timeStampCount];
     for (NSUInteger i = 0; i < timeStampCount; ++i)
@@ -566,7 +613,6 @@ static NSString * const laughStateL = @"Laughing";
     // Setup scanner
     
     // Can't scan through directly as some numerical values are 'n/a', so take line and split into array
-    NSString *line = nil;
     NSCharacterSet *newLine = [NSCharacterSet newlineCharacterSet];
     
     while ([scanner scanUpToCharactersFromSet:newLine intoString:&line])
