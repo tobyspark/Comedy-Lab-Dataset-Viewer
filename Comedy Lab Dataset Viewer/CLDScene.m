@@ -129,7 +129,7 @@ static NSString * const laughStateL = @"Laughing";
     
     SCNCamera *audienceCamera = [SCNCamera camera];
     [audienceCamera setAutomaticallyAdjustsZRange: YES];
-    float focalLength = 40;
+    float focalLength = 46;
     [audienceCamera setXFov: (180.0*35.0) / (M_PI*focalLength)];
     
     SCNNode *audienceCameraNode = [SCNNode node];
@@ -138,11 +138,11 @@ static NSString * const laughStateL = @"Laughing";
     
     // Do two-part CATransform3DRotate to ensure orientation is correct
     CATransform3D cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
-    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(55), 1, 0, 0);
+    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(46), 1, 0, 0);
     [audienceCameraNode setTransform:cameraOrientation];
     
     // Now set position in world coords rather than translate.
-    [audienceCameraNode setPosition: SCNVector3Make(-800, -400, 4200)];
+    [audienceCameraNode setPosition: SCNVector3Make(-1000, -350, 4900)];
     
     [scene.rootNode addChildNode:audienceCameraNode];
     
