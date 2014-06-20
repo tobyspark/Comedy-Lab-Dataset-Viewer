@@ -9,6 +9,9 @@
 #import "CLDView.h"
 #import <GLKit/GLKit.h>
 
+#define kCLDCameraNodeName @"Camera-Audience"
+#define kCLDSubjectNodeName @"Audience_01"
+
 @implementation CLDView
 
 -(IBAction)moveDown:(id)sender
@@ -54,6 +57,17 @@
 {
     static float cameraAngle = 55;
     
+    // Set our nodes to manipulate
+    if (!self.nodeToMove)
+    {
+        [self setNodeToMove:[[self.scene rootNode] childNodeWithName:kCLDCameraNodeName recursively:NO]];
+    }
+    if (!self.subjectNode)
+    {
+        [self setSubjectNode:[[self.scene rootNode] childNodeWithName:kCLDSubjectNodeName recursively:NO]];
+    }
+    
+    // Register camera onto video
     if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"a"])
     {
         double focalLength = (180*35 / self.nodeToMove.camera.xFov) / M_PI;
@@ -96,10 +110,47 @@
         
         NSLog(@"%f", cameraAngle);
     }
+    
+    // Align subject gaze
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"i"])
+    {
+        [self nudgeSubjectNodeAroundZ:0 aroundY:1];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"k"])
+    {
+        [self nudgeSubjectNodeAroundZ:0 aroundY:-1];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"j"])
+    {
+        [self nudgeSubjectNodeAroundZ:1 aroundY:0];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"l"])
+    {
+        [self nudgeSubjectNodeAroundZ:-1 aroundY:0];
+    }
+    
+    // Pass onto 'moveUp/Down/Left/Right' methods
     else
     {
         [self interpretKeyEvents:@[theEvent]];
     }
 }
+
+- (void)nudgeSubjectNodeAroundZ:(CGFloat)dz aroundY:(CGFloat)dy
+{
+    static CGFloat z = 0;
+    static CGFloat y = 0;
+    
+    z += dz;
+    y += dy;
+    
+    CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(z), 0, 0, 1);
+    transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(y), 0, 1, 0);
+    
+    [self.subjectNode setTransform:transform];
+    
+    NSLog(@"Subject %@ yRot: %f zRot: %f", [self.subjectNode name], y, z);
+}
+
 
 @end

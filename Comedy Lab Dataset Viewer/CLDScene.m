@@ -365,7 +365,9 @@ static NSString * const laughStateL = @"Laughing";
         
         SCNNode *subjectNode = [SCNNode node];
         [subjectNode setName:columnHeader];
-        [subjectNode addChildNode:[SCNNode arrow]];
+        
+        SCNNode* subjectArrowNode = [SCNNode arrow];
+        [subjectNode addChildNode:subjectArrowNode];
         
         CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
         positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
@@ -385,7 +387,7 @@ static NSString * const laughStateL = @"Laughing";
         rotationAnimation.calculationMode = kCAAnimationDiscrete;
         rotationAnimation.values = subjectRotationArray[i];
         rotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-        [subjectNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
+        [subjectArrowNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
         
         [self.rootNode addChildNode:subjectNode];
     }

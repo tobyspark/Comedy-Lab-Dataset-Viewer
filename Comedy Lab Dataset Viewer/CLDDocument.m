@@ -28,7 +28,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
 @property (strong) CALayer          *playerMaskLayer;
 @property (strong) SCNLayer         *audienceSceneLayer;
 @property (strong) SCNLayer         *performerSceneLayer;
-@property (strong) SCNView          *freeSceneView;
+@property (strong) CLDView          *freeSceneView;
 
 @property (strong) NSMutableArray* freeSceneViewPovs;
 
@@ -78,7 +78,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     [aController.window.contentView addSubview:self.playerView];
     
     // Use SCNView rather than layer as this gives us UI, and we can now keep in sync using AVPlayer's periodicTimeObserver rather than the broken elegance of AVSyncronizedLayer
-    [self setFreeSceneView:[[SCNView alloc] initWithFrame:aController.window.frame]];
+    [self setFreeSceneView:[[CLDView alloc] initWithFrame:aController.window.frame]];
     [self.freeSceneView setAutoenablesDefaultLighting:YES];
     [self.freeSceneView setAllowsCameraControl:YES];
     
@@ -231,9 +231,6 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     
     [self.performerSceneLayer setScene:scene];
     [self.performerSceneLayer setPointOfView:[scene.rootNode childNodeWithName:@"Camera-Performer" recursively:NO]];
-    
-    CLDView *superview = (CLDView*)[self.freeSceneView superview];
-    [superview setNodeToMove:[scene.rootNode childNodeWithName:@"Camera-Audience" recursively:NO]];
 }
 
 - (void) loadMocap

@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import <SceneKit/SceneKit.h>
 
-@interface CLDView : NSView
+@interface CLDView : SCNView
 @property (weak) SCNNode *nodeToMove;
+@property (weak) SCNNode *subjectNode;
 @end
