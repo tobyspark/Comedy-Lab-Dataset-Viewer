@@ -16,6 +16,11 @@ static NSString * const CLDMetadataKeyDatasetPath = @"datasetPath";
 static NSString * const CLDMetadataKeyViewPovs = @"freeViewPOVs";
 static NSString * const CLDMetadataKeyVolume = @"volume";
 static NSString * const CLDMetadataKeyMuted = @"muted";
+static NSString * const CLDMetadataKeyViewLightState = @"lightState";
+static NSString * const CLDMetadataKeyViewLaughState = @"laughState";
+static NSString * const CLDMetadataKeyViewBreathingBelt = @"breathingBelt";
+static NSString * const CLDMetadataKeyViewShoreHappiness = @"happiness";
+static NSString * const CLDMetadataKeyViewGaze = @"gaze";
 
 @interface CLDDocument ()
 
@@ -43,6 +48,11 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
         // Add your subclass-specific initialization here.
         
         _freeSceneViewPovs = [NSMutableArray arrayWithCapacity:10];
+        
+        _viewLightState = YES;
+        _viewLaughState = YES;
+        _viewBreathingBelt = YES;
+        _viewShoreHappiness = YES;
     }
     return self;
 }
@@ -244,6 +254,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     {
         [self.scene addWithMocapURL:self.mocapURL error:nil];
         [self movieSeekToSceneStart];
+        [self toggleDataView:nil];
     }
 }
 
@@ -259,6 +270,7 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     {
         [self.scene addWithDatasetURL:self.datasetURL error:nil];
         [self movieSeekToSceneStart];
+        [self toggleDataView:nil];
     }
 }
 
@@ -307,6 +319,70 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     }
 }
 
+- (IBAction) toggleDataView:(id)sender
+{
+    if ([[sender title] isEqualToString:@"Light state"])
+    {
+        self.viewLightState = !self.viewLightState;
+    }
+    else if ([[sender title] isEqualToString:@"Laugh state"])
+    {
+        self.viewLaughState = !self.viewLaughState;
+    }
+    else if ([[sender title] isEqualToString:@"Chest expansion"])
+    {
+        self.viewBreathingBelt = !self.viewBreathingBelt;
+    }
+    else if ([[sender title] isEqualToString:@"SHORE happiness"])
+    {
+        self.viewShoreHappiness = !self.viewShoreHappiness;
+    }
+    else if ([[sender title] isEqualToString:@"Gaze"])
+    {
+        self.viewGaze = !self.viewGaze;
+    }
+    
+    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+        if ([[child name] hasPrefix:@"lightState"])
+        {
+            [child setHidden:!self.viewLightState];
+        }
+        return NO;
+    }];
+    
+    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+        if ([[child name] hasPrefix:@"laughState"])
+        {
+            [child setHidden:!self.viewLaughState];
+        }
+        return NO;
+    }];
+    
+    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+        if ([[child name] hasPrefix:@"breathingBelt"])
+        {
+            [child setHidden:!self.viewBreathingBelt];
+        }
+        return NO;
+    }];
+    
+    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+        if ([[child name] hasPrefix:@"happiness"])
+        {
+            [child setHidden:!self.viewShoreHappiness];
+        }
+        return NO;
+    }];
+    
+    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+        if ([[child name] hasPrefix:@"Audience"])
+        {
+            [child setHidden:!self.viewGaze];
+        }
+        return NO;
+    }];
+}
+
 #pragma mark - NSMenuDelegate
 
 - (void)menuWillOpen:(NSMenu *)menu
@@ -316,7 +392,13 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     
     [[viewMenu itemWithTitle:@"Hide audience"] setState:self.playerMaskLayer.opacity == 1.0 ? NSOnState : NSOffState];
     
-    NSUInteger startIndexForPovs = 3;
+    [[viewMenu itemWithTitle:@"Light state"] setState:self.viewLightState];
+    [[viewMenu itemWithTitle:@"Laugh state"] setState:self.viewLaughState];
+    [[viewMenu itemWithTitle:@"Chest expansion"] setState:self.viewBreathingBelt];
+    [[viewMenu itemWithTitle:@"SHORE happiness"] setState:self.viewShoreHappiness];
+    [[viewMenu itemWithTitle:@"Gaze"] setState:self.viewGaze];
+ 
+    NSUInteger startIndexForPovs = [[menu itemArray] indexOfObject:[menu itemWithTitle:@"Add viewpoint"]] + 1;
     NSUInteger povsCount = [self.freeSceneViewPovs count];
     NSUInteger menuitemsCount = [[viewMenu itemArray] count] - startIndexForPovs;
     
@@ -370,6 +452,21 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
     
     [metadata setObject:self.freeSceneViewPovs forKey:CLDMetadataKeyViewPovs];
     
+    NSNumber *viewLightState = [NSNumber numberWithBool:self.viewLightState];
+    [metadata setObject:viewLightState forKey:CLDMetadataKeyViewLightState];
+    
+    NSNumber *viewLaughState = [NSNumber numberWithBool:self.viewLaughState];
+    [metadata setObject:viewLaughState forKey:CLDMetadataKeyViewLaughState];
+    
+    NSNumber *viewBreathingBelt = [NSNumber numberWithBool:self.viewBreathingBelt];
+    [metadata setObject:viewBreathingBelt forKey:CLDMetadataKeyViewBreathingBelt];
+    
+    NSNumber *viewShoreHappiness = [NSNumber numberWithBool:self.viewShoreHappiness];
+    [metadata setObject:viewShoreHappiness forKey:CLDMetadataKeyViewBreathingBelt];
+    
+    NSNumber *viewGaze = [NSNumber numberWithBool:self.viewGaze];
+    [metadata setObject:viewGaze forKey:CLDMetadataKeyViewGaze];
+    
     metadataSuccess = [metadata writeToURL:metadataURL atomically:YES];
     
     // TASK: Scene
@@ -408,6 +505,21 @@ static NSString * const CLDMetadataKeyMuted = @"muted";
         
         NSString *datasetPath = [metadata objectForKey:CLDMetadataKeyDatasetPath];
         if (datasetPath) self.datasetURL = [NSURL fileURLWithPath:datasetPath];
+        
+        NSNumber *viewLightState = [metadata objectForKey:CLDMetadataKeyViewLightState];
+        if (viewLightState) self.viewLightState = [viewLightState boolValue];
+        
+        NSNumber *viewLaughState = [metadata objectForKey:CLDMetadataKeyViewLaughState];
+        if (viewLaughState) self.viewLaughState = [viewLaughState boolValue];
+        
+        NSNumber *viewBreathingBelt = [metadata objectForKey:CLDMetadataKeyViewBreathingBelt];
+        if (viewBreathingBelt) self.viewBreathingBelt = [viewBreathingBelt boolValue];
+        
+        NSNumber *viewShoreHappiness = [metadata objectForKey:CLDMetadataKeyViewShoreHappiness];
+        if (viewShoreHappiness) self.viewShoreHappiness = [viewShoreHappiness boolValue];
+        
+        NSNumber *viewGaze = [metadata objectForKey:CLDMetadataKeyViewGaze];
+        if (viewGaze) self.viewGaze = [viewGaze boolValue];
         
         self.freeSceneViewPovs = [metadata objectForKey:CLDMetadataKeyViewPovs];
     }

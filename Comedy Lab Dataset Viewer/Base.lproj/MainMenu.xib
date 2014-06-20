@@ -147,6 +147,37 @@
                                     <action selector="toggleAudienceMask:" target="-1" id="Gq4-Vs-bJC"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="5zG-7M-N5G"/>
+                            <menuItem title="Light state" id="GTB-au-yHI">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleDataView:" target="-1" id="RUP-mP-qYz"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Laugh state" id="jOy-In-7Js">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleDataView:" target="-1" id="G7D-yV-5jF"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Chest expansion" id="ov5-6f-KuL">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleDataView:" target="-1" id="jBU-Og-Cfj"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="SHORE happiness" id="YwM-XT-Q04">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleDataView:" target="-1" id="cE4-Oy-ehz"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Gaze" id="Ljn-4f-XBR">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleDataView:" target="-1" id="VVn-C5-Em1"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="c8Y-3X-aVf"/>
                             <menuItem title="Add viewpoint" id="kYa-og-5yR">
                                 <modifierMask key="keyEquivalentModifierMask"/>

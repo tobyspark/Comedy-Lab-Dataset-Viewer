@@ -20,6 +20,11 @@
 @property (strong) NSURL *datasetURL;
 @property float movieVolume;
 @property bool movieMuted;
+@property bool viewLightState;
+@property bool viewLaughState;
+@property bool viewBreathingBelt;
+@property bool viewShoreHappiness;
+@property bool viewGaze;
 
 - (IBAction) chooseMovie:(id)sender;
 - (IBAction) chooseMocapData:(id)sender;
@@ -27,5 +32,6 @@
 - (IBAction) freeSceneViewAddCurrentPov:(id)sender;
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender;
 - (IBAction) toggleAudienceMask:(id)sender;
+- (IBAction) toggleDataView:(id)sender;
 
 @end

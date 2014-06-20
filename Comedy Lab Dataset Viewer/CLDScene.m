@@ -363,60 +363,62 @@ static NSString * const laughStateL = @"Laughing";
         columnHeader = [columnHeader componentsSeparatedByString:@"/"][0];
         columnHeader = [columnHeader componentsSeparatedByString:@"_Hat"][0];
         
-        SCNNode *subjectNode = [SCNNode node];
-        [subjectNode setName:columnHeader];
-        
-        SCNNode* subjectArrowNode = [SCNNode arrow];
-        [subjectNode addChildNode:subjectArrowNode];
-        
-        CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-        positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-        positionAnimation.duration = finalTime;
-        positionAnimation.removedOnCompletion = NO;
-        positionAnimation.keyTimes = timeArray;
-        positionAnimation.calculationMode = kCAAnimationDiscrete;
-        positionAnimation.values = subjectPositionArray[i];
-        positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-        [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
-        
-        CAKeyframeAnimation *rotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
-        rotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-        rotationAnimation.duration = finalTime;
-        rotationAnimation.removedOnCompletion = NO;
-        rotationAnimation.keyTimes = timeArray;
-        rotationAnimation.calculationMode = kCAAnimationDiscrete;
-        rotationAnimation.values = subjectRotationArray[i];
-        rotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-        [subjectArrowNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
-        
-        [self.rootNode addChildNode:subjectNode];
+        // Add in head position node and gaze arrow
+        {
+            SCNNode *subjectNode = [SCNNode node];
+            [subjectNode setName:columnHeader];
+            
+            SCNNode* subjectArrowNode = [SCNNode arrow];
+            [subjectNode addChildNode:subjectArrowNode];
+            
+            CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+            positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            positionAnimation.duration = finalTime;
+            positionAnimation.removedOnCompletion = NO;
+            positionAnimation.keyTimes = timeArray;
+            positionAnimation.calculationMode = kCAAnimationDiscrete;
+            positionAnimation.values = subjectPositionArray[i];
+            positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+            [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
+            
+            CAKeyframeAnimation *rotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
+            rotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            rotationAnimation.duration = finalTime;
+            rotationAnimation.removedOnCompletion = NO;
+            rotationAnimation.keyTimes = timeArray;
+            rotationAnimation.calculationMode = kCAAnimationDiscrete;
+            rotationAnimation.values = subjectRotationArray[i];
+            rotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+            [subjectArrowNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
+            
+            [self.rootNode addChildNode:subjectNode];
+        }
+        // Add in guide lines for subjects
+        {
+            SCNNode *subjectNode = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:5 height:5 length:1000 chamferRadius:0]];
+            [subjectNode setName:columnHeader];
+            
+            NSMutableArray *positionArray = [NSMutableArray arrayWithCapacity:[subjectPositionArray[i] count]];
+            [subjectPositionArray[i] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                SCNVector3 xyz = [obj SCNVector3Value];
+                SCNVector3 pos = SCNVector3Make(xyz.x, xyz.y, 500);
+                [positionArray addObject:[NSValue valueWithSCNVector3:pos]];
+            }];
+            
+            CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+            positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            positionAnimation.duration = finalTime;
+            positionAnimation.removedOnCompletion = NO;
+            positionAnimation.keyTimes = timeArray;
+            positionAnimation.calculationMode = kCAAnimationDiscrete;
+            positionAnimation.values = positionArray;
+            positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+            [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
+            
+            [self.rootNode addChildNode:subjectNode];
+        }
     }
-    
-    // Add in guide lines for subjects
-    for (NSUInteger i = 0; i < subjects; i++)
-    {
-        SCNNode *subjectNode = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:5 height:5 length:1000 chamferRadius:0]];
-        
-        NSMutableArray *positionArray = [NSMutableArray arrayWithCapacity:[subjectPositionArray[i] count]];
-        [subjectPositionArray[i] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            SCNVector3 xyz = [obj SCNVector3Value];
-            SCNVector3 pos = SCNVector3Make(xyz.x, xyz.y, 500);
-            [positionArray addObject:[NSValue valueWithSCNVector3:pos]];
-        }];
-        
-        CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-        positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-        positionAnimation.duration = finalTime;
-        positionAnimation.removedOnCompletion = NO;
-        positionAnimation.keyTimes = timeArray;
-        positionAnimation.calculationMode = kCAAnimationDiscrete;
-        positionAnimation.values = positionArray;
-        positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-        [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
-        
-        [self.rootNode addChildNode:subjectNode];
-    }
-    
+
     if ([[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue] < 0.0001 || startTime < [[self attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue])
     {
         [self setAttribute:@(startTime) forKey:SCNSceneStartTimeAttributeKey];
@@ -713,6 +715,7 @@ static NSString * const laughStateL = @"Laughing";
             animation.usesSceneTimeBase = YES;
             
             SCNNode *lightStateNode = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:500 height:1]];
+            [lightStateNode setName:@"lightState"];
             [lightStateNode setRotation:SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90))];
             [lightStateNode addAnimation:animation forKey:@"fingers crossed for lightState"];
             [[subjectData objectForKey:@"seatNode"] addChildNode:lightStateNode];
@@ -720,67 +723,62 @@ static NSString * const laughStateL = @"Laughing";
         
         // Laugh State
         {
-            NSArray *array = [subjectData objectForKey:@"laughState"];
-            
-            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
-            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
-            animation.duration = endTime;
-            animation.removedOnCompletion = NO;
-            animation.keyTimes = timeArray;
-            animation.calculationMode = kCAAnimationDiscrete;
-            animation.values = [array valueForKey:@"isLaughStateNotN"];
-            animation.usesSceneTimeBase = YES;
-            
-            SCNNode *node = [SCNNode nodeWithGeometry:geoN];
+            SCNNode *laughStateNode = [SCNNode node];
+            [laughStateNode setName:@"laughState"];
             CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 1, 0, 0);
             transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(90), 0, -1, 0);
-            [node setTransform:transform];
-            [node setScale:SCNVector3Make(4, 4, 40)];
-            [node setPosition:SCNVector3Make(0, 200, -40)];
-            [node addAnimation:animation forKey:@"fingers crossed for geoN"];
-            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
-        }
-        {
-            NSArray *array = [subjectData objectForKey:@"laughState"];
-            
-            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
-            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
-            animation.duration = endTime;
-            animation.removedOnCompletion = NO;
-            animation.keyTimes = timeArray;
-            animation.calculationMode = kCAAnimationDiscrete;
-            animation.values = [array valueForKey:@"isLaughStateNotS"];
-            animation.usesSceneTimeBase = YES;
-            
-            SCNNode *node = [SCNNode nodeWithGeometry:geoS];
-            CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 1, 0, 0);
-            transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(90), 0, -1, 0);
-            [node setTransform:transform];
-            [node setScale:SCNVector3Make(4, 4, 40)];
-            [node setPosition:SCNVector3Make(0, 200, -40)];
-            [node addAnimation:animation forKey:@"fingers crossed for geoS"];
-            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
-        }
-        {
-            NSArray *array = [subjectData objectForKey:@"laughState"];
-            
-            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
-            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
-            animation.duration = endTime;
-            animation.removedOnCompletion = NO;
-            animation.keyTimes = timeArray;
-            animation.calculationMode = kCAAnimationDiscrete;
-            animation.values = [array valueForKey:@"isLaughStateNotL"];
-            animation.usesSceneTimeBase = YES;
-            
-            SCNNode *node = [SCNNode nodeWithGeometry:geoL];
-            CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(90), 1, 0, 0);
-            transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(90), 0, -1, 0);
-            [node setTransform:transform];
-            [node setScale:SCNVector3Make(4, 4, 40)];
-            [node setPosition:SCNVector3Make(0, 200, -40)];
-            [node addAnimation:animation forKey:@"fingers crossed for geoL"];
-            [[subjectData objectForKey:@"seatNode"] addChildNode:node];
+            [laughStateNode setTransform:transform];
+            [laughStateNode setScale:SCNVector3Make(4, 4, 40)];
+            [laughStateNode setPosition:SCNVector3Make(0, 200, -40)];
+            [[subjectData objectForKey:@"seatNode"] addChildNode:laughStateNode];
+            {
+                NSArray *array = [subjectData objectForKey:@"laughState"];
+                
+                CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+                animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+                animation.duration = endTime;
+                animation.removedOnCompletion = NO;
+                animation.keyTimes = timeArray;
+                animation.calculationMode = kCAAnimationDiscrete;
+                animation.values = [array valueForKey:@"isLaughStateNotN"];
+                animation.usesSceneTimeBase = YES;
+                
+                SCNNode *node = [SCNNode nodeWithGeometry:geoN];
+                [node addAnimation:animation forKey:@"fingers crossed for geoN"];
+                [laughStateNode addChildNode:node];
+            }
+            {
+                NSArray *array = [subjectData objectForKey:@"laughState"];
+                
+                CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+                animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+                animation.duration = endTime;
+                animation.removedOnCompletion = NO;
+                animation.keyTimes = timeArray;
+                animation.calculationMode = kCAAnimationDiscrete;
+                animation.values = [array valueForKey:@"isLaughStateNotS"];
+                animation.usesSceneTimeBase = YES;
+                
+                SCNNode *node = [SCNNode nodeWithGeometry:geoS];
+                [node addAnimation:animation forKey:@"fingers crossed for geoS"];
+                [laughStateNode addChildNode:node];
+            }
+            {
+                NSArray *array = [subjectData objectForKey:@"laughState"];
+                
+                CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+                animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+                animation.duration = endTime;
+                animation.removedOnCompletion = NO;
+                animation.keyTimes = timeArray;
+                animation.calculationMode = kCAAnimationDiscrete;
+                animation.values = [array valueForKey:@"isLaughStateNotL"];
+                animation.usesSceneTimeBase = YES;
+                
+                SCNNode *node = [SCNNode nodeWithGeometry:geoL];
+                [node addAnimation:animation forKey:@"fingers crossed for geoL"];
+                [laughStateNode addChildNode:node];
+            }
         }
         
         // Breathing Belts
@@ -797,6 +795,7 @@ static NSString * const laughStateL = @"Laughing";
             animation.usesSceneTimeBase = YES;
             
             SCNNode *node = [SCNNode nodeWithGeometry:box];
+            [node setName:@"breathingBelt"];
             [node setPosition:SCNVector3Make(0, -60, 0.5)];
             [node setPivot:CATransform3DMakeTranslation(0, 0, -0.5)];
             [node addAnimation:animation forKey:@"fingers crossed for breathingBelt"];
@@ -817,6 +816,7 @@ static NSString * const laughStateL = @"Laughing";
             animation.usesSceneTimeBase = YES;
             
             SCNNode *node = [SCNNode nodeWithGeometry:box];
+            [node setName:@"happiness"];
             [node setPosition:SCNVector3Make(0, -120, 0.5)];
             [node setPivot:CATransform3DMakeTranslation(0, 0, -0.5)];
             [node addAnimation:animation forKey:@"fingers crossed for happiness"];
