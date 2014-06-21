@@ -347,35 +347,19 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         {
             [child setHidden:!self.viewLightState];
         }
-        return NO;
-    }];
-    
-    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
-        if ([[child name] hasPrefix:@"laughState"])
+        else if ([[child name] hasPrefix:@"laughState"])
         {
             [child setHidden:!self.viewLaughState];
         }
-        return NO;
-    }];
-    
-    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
-        if ([[child name] hasPrefix:@"breathingBelt"])
+        else if ([[child name] hasPrefix:@"breathingBelt"])
         {
             [child setHidden:!self.viewBreathingBelt];
         }
-        return NO;
-    }];
-    
-    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
-        if ([[child name] hasPrefix:@"happiness"])
+        else if ([[child name] hasPrefix:@"happiness"])
         {
             [child setHidden:!self.viewShoreHappiness];
         }
-        return NO;
-    }];
-    
-    [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
-        if ([[child name] hasPrefix:@"Audience"])
+        else if ([[child name] hasPrefix:@"Audience"])
         {
             [child setHidden:!self.viewGaze];
         }
