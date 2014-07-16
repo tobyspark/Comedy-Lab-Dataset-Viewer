@@ -10,6 +10,7 @@
 #import <SceneKit/SceneKit.h>
 
 @interface CLDView : SCNView
-@property (weak) SCNNode *nodeToMove;
+@property (weak) SCNNode *cameraNode;
 @property (weak) SCNNode *subjectNode;
+@property (strong) NSArray *subjectNodes;
 @end

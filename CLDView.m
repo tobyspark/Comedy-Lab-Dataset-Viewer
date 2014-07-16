@@ -14,119 +14,154 @@
 
 @implementation CLDView
 
+#pragma mark Key handlers - Subject gaze
+
 -(IBAction)moveDown:(id)sender
 {
-    SCNVector3 steppedPos = SCNVector3Make(self.nodeToMove.position.x - 100,
-                                           self.nodeToMove.position.y,
-                                           self.nodeToMove.position.z);
-    
-    self.nodeToMove.position = steppedPos;
-    NSLog(@"%f, %f, %f", self.nodeToMove.position.x, self.nodeToMove.position.y, self.nodeToMove.position.z);
+    [self nudgeSubjectNodeAroundZ:0 aroundY:-1];
 }
 
 -(IBAction)moveUp:(id)sender
 {
-    SCNVector3 steppedPos = SCNVector3Make(self.nodeToMove.position.x + 100,
-                                           self.nodeToMove.position.y,
-                                           self.nodeToMove.position.z);
-    
-    self.nodeToMove.position = steppedPos;
-    NSLog(@"%f, %f, %f", self.nodeToMove.position.x, self.nodeToMove.position.y, self.nodeToMove.position.z);
+    [self nudgeSubjectNodeAroundZ:0 aroundY:1];
 }
 
 -(IBAction)moveLeft:(id)sender
 {
-    SCNVector3 steppedPos = SCNVector3Make(self.nodeToMove.position.x,
-                                           self.nodeToMove.position.y,
-                                           self.nodeToMove.position.z  - 100);
-    
-    self.nodeToMove.position = steppedPos;
-    NSLog(@"%f, %f, %f", self.nodeToMove.position.x, self.nodeToMove.position.y, self.nodeToMove.position.z);
+    [self nudgeSubjectNodeAroundZ:-1 aroundY:0];
 }
 
 -(IBAction)moveRight:(id)sender
 {
-    SCNVector3 steppedPos = SCNVector3Make(self.nodeToMove.position.x,
-                                           self.nodeToMove.position.y,
-                                           self.nodeToMove.position.z  + 100);
-    self.nodeToMove.position = steppedPos;
-    NSLog(@"%f, %f, %f", self.nodeToMove.position.x, self.nodeToMove.position.y, self.nodeToMove.position.z);
+    [self nudgeSubjectNodeAroundZ:1 aroundY:0];
 }
+
+#pragma mark Key handlers - Config
 
 -(void)keyDown:(NSEvent *)theEvent
 {
-    static float cameraAngle = 55;
-    
     // Set our nodes to manipulate
-    if (!self.nodeToMove)
+    if (!self.cameraNode)
     {
-        [self setNodeToMove:[[self.scene rootNode] childNodeWithName:kCLDCameraNodeName recursively:NO]];
+        [self setCameraNode:[[self.scene rootNode] childNodeWithName:kCLDCameraNodeName recursively:NO]];
     }
     if (!self.subjectNode)
     {
-        [self setSubjectNode:[[self.scene rootNode] childNodeWithName:kCLDSubjectNodeName recursively:NO]];
+        NSArray *audienceNodes = [[self.scene rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+            // Each audience is two nodes, one with arrow child node and one just as guide line.
+            return ([[child name] hasPrefix:@"Audience"] && [[child childNodes] count] > 0);
+        }];
+        
+        [self setSubjectNodes:[audienceNodes arrayByAddingObject:[[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO]]];
+        [self setSubjectNode:self.subjectNodes[0]];
     }
     
-    // Register camera onto video
-    if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"a"])
+    if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"/"])
     {
-        double focalLength = (180*35 / self.nodeToMove.camera.xFov) / M_PI;
-        focalLength += 1;
-        self.nodeToMove.camera.xFov = (180.0*35.0) / (M_PI*focalLength);
-        NSLog(@"%f", focalLength);
-    }
-    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"z"])
-    {
-        double focalLength = (180*35 / self.nodeToMove.camera.xFov) / M_PI;
-        focalLength -= 1;
-        self.nodeToMove.camera.xFov = (180.0*35.0) / (M_PI*focalLength);
-        NSLog(@"%f", focalLength);
-    }
-    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"s"])
-    {
-        cameraAngle += 1;
-        
-        SCNVector3 pos = self.nodeToMove.position;
-        self.nodeToMove.position = SCNVector3Make(0, 0, 0);
-        
-        CATransform3D cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
-        cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(cameraAngle), 1, 0, 0);
-        self.nodeToMove.transform = cameraOrientation;
-        self.nodeToMove.position = pos;
-        
-        NSLog(@"%f", cameraAngle);
-    }
-    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"x"])
-    {
-        cameraAngle -= 1;
-        
-        SCNVector3 pos = self.nodeToMove.position;
-        self.nodeToMove.position = SCNVector3Make(0, 0, 0);
-        
-        CATransform3D cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
-        cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(cameraAngle), 1, 0, 0);
-        self.nodeToMove.transform = cameraOrientation;
-        self.nodeToMove.position = pos;
-        
-        NSLog(@"%f", cameraAngle);
+        NSUInteger i = [self.subjectNodes indexOfObject:self.subjectNode];
+        i++;
+        if (i >= [self.subjectNodes count]) i = 0;
+        [self setSubjectNode:self.subjectNodes[i]];
+        NSLog(@"subjectNode: %@", [self.subjectNode name]);
     }
     
-    // Align subject gaze
-    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"i"])
+    // Log out subject gaze with space. These are offsets as per ComedyLab Vicon Exporter
+    
+    else if (!([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualTo:@" "])
     {
-        [self nudgeSubjectNodeAroundZ:0 aroundY:1];
+        // Get align info out of app and back into MatLab Vicon Exporter.
+        // We have rotation as axis-angle and need rotation matrix.
+        // Easiest way is to use MatLab's vrrotvec2mat function rather than convert here
+        // So this, alas, writes some MatLab code to the console.
+        NSLog(@"%% Time %.01f for %@", [self currentTime], [[self.subjectNodes valueForKey:@"name"] componentsJoinedByString:@", "]);
+        for (NSUInteger i = 0; i < [self.subjectNodes count]; ++i)
+        {
+            SCNNode* node = self.subjectNodes[i];
+            SCNVector4 r = node.rotation;
+            NSString *matlabLine = [NSString stringWithFormat:@"offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])", (unsigned long)i, r.w, r.x, r.y, r.z];
+            printf("%s\n", [matlabLine cStringUsingEncoding:NSASCIIStringEncoding]);
+            
+            /*
+             CATransform3D t = node.transform;
+             NSLog(@"%@ at %.01f = [%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f]",
+             [node name], [self currentTime],
+             t.m11, t.m12, t.m13, t.m14,
+             t.m21, t.m22, t.m23, t.m24,
+             t.m31, t.m32, t.m33, t.m34,
+             t.m41, t.m42, t.m43, t.m44);
+             */
+        }
     }
-    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"k"])
+    
+    #pragma mark Key handlers - Camera registration
+    
+    // Rotate with alt-numpad as arrows
+    else if (([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualToString:@"4"])
     {
-        [self nudgeSubjectNodeAroundZ:0 aroundY:-1];
+        [self nudgeCameraNodeAroundZ:-1 aroundY:0 aroundX:0];
     }
-    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"j"])
+    else if (([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualToString:@"6"])
     {
-        [self nudgeSubjectNodeAroundZ:1 aroundY:0];
+        [self nudgeCameraNodeAroundZ:1 aroundY:0 aroundX:0];
     }
-    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"l"])
+    else if (([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualToString:@"2"])
     {
-        [self nudgeSubjectNodeAroundZ:-1 aroundY:0];
+        [self nudgeCameraNodeAroundZ:0 aroundY:0 aroundX:1];
+    }
+    else if (([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualToString:@"8"])
+    {
+        [self nudgeCameraNodeAroundZ:0 aroundY:0 aroundX:-1];
+    }
+    else if (([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualToString:@"0"])
+    {
+        [self nudgeCameraNodeAroundZ:0 aroundY:-1 aroundX:0];
+    }
+    else if (([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualToString:@"5"])
+    {
+        [self nudgeCameraNodeAroundZ:0 aroundY:1 aroundX:0];
+    }
+    // Position with numpad as arrows
+    else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"4"])
+    {
+        [self nudgeCameraNodeAlongX:0 alongY:-100 alongZ:0];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"6"])
+    {
+        [self nudgeCameraNodeAlongX:0 alongY:100 alongZ:0];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"2"])
+    {
+        [self nudgeCameraNodeAlongX:100 alongY:0 alongZ:0];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"8"])
+    {
+        [self nudgeCameraNodeAlongX:-100 alongY:0 alongZ:0];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"0"])
+    {
+        [self nudgeCameraNodeAlongX:0 alongY:0 alongZ:100];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualToString:@"5"])
+    {
+        [self nudgeCameraNodeAlongX:0 alongY:0 alongZ:-100];
+    }
+    // Field of view with numpad 7,9
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"7"])
+    {
+        [self nudgeCameraFocalLength:+1];
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"9"])
+    {
+        [self nudgeCameraFocalLength:-1];
+    }
+    // Log camera parameters with alt-space
+    else if (([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualTo:@" "])
+    {
+        NSLog(@"Camera: %@", [self.cameraNode name]);
+        // Log via calling nudge methods with no nudge amount
+        [self nudgeCameraFocalLength:0];
+        [self nudgeCameraNodeAlongX:0 alongY:0 alongZ:0];
+        [self nudgeCameraNodeAroundZ:0 aroundY:0 aroundX:0];
     }
     
     // Pass onto 'moveUp/Down/Left/Right' methods
@@ -136,8 +171,12 @@
     }
 }
 
+# pragma mark Nudge methods
+
 - (void)nudgeSubjectNodeAroundZ:(CGFloat)dz aroundY:(CGFloat)dy
 {
+    // Rotate in this order makes most sense for setting gaze
+    
     static CGFloat z = 0;
     static CGFloat y = 0;
     
@@ -152,5 +191,50 @@
     NSLog(@"Subject %@ yRot: %f zRot: %f", [self.subjectNode name], y, z);
 }
 
+- (void)nudgeCameraNodeAroundZ:(CGFloat)dz aroundY:(CGFloat)dy aroundX:(CGFloat)dx
+{
+    // Rotate in this order makes most sense for setting camera
+    
+    static CGFloat z = -90;
+    static CGFloat y = 0;
+    static CGFloat x = 60;
+    
+    x += dx;
+    z += dz;
+    y += dy;
+    
+    // Store position and set to zero position for rotation
+    SCNVector3 pos = self.cameraNode.position;
+    self.cameraNode.position = SCNVector3Make(0, 0, 0);
+    
+    CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(z), 0, 0, 1);
+    transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(y), 0, 1, 0);
+    transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(x), 1, 0, 0);
+    
+    self.cameraNode.transform = transform;
+    
+    // Restore position
+    self.cameraNode.position = pos;
+    
+    NSLog(@"Rotation: %f, %f, %f", x, y, z);
+}
+
+- (void)nudgeCameraNodeAlongX:(CGFloat)dx alongY:(CGFloat)dy alongZ:(CGFloat)dz
+{
+    SCNVector3 steppedPos = SCNVector3Make(self.cameraNode.position.x + dx,
+                                           self.cameraNode.position.y + dy,
+                                           self.cameraNode.position.z + dz);
+
+    self.cameraNode.position = steppedPos;
+    NSLog(@"Position: %f, %f, %f", self.cameraNode.position.x, self.cameraNode.position.y, self.cameraNode.position.z);
+}
+
+- (void)nudgeCameraFocalLength:(CGFloat)df
+{
+    double focalLength = (180*35 / self.cameraNode.camera.xFov) / M_PI;
+    focalLength += df;
+    self.cameraNode.camera.xFov = (180.0*35.0) / (M_PI*focalLength);
+    NSLog(@"Focal length: %f", focalLength);
+}
 
 @end

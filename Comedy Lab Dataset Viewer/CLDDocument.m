@@ -53,6 +53,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         _viewLaughState = YES;
         _viewBreathingBelt = YES;
         _viewShoreHappiness = YES;
+        _viewGaze = YES;
     }
     return self;
 }
@@ -108,6 +109,14 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     [self setPlayerMaskLayer:[CALayer layer]];
     [self.playerMaskLayer setBackgroundColor:CGColorCreateGenericGray(0, 1)];
     [self.playerMaskLayer setOpacity:0];
+    
+#ifdef CLDRegister3D
+    const char* path = [[[NSBundle mainBundle] pathForResource:@"CLDRegister3D Audience video frame guides" ofType:@"png"] cStringUsingEncoding:NSUTF8StringEncoding];
+    CGDataProviderRef dataProvider = CGDataProviderCreateWithFilename(path);
+    CGImageRef image = CGImageCreateWithPNGDataProvider(dataProvider, NULL, NO, kCGRenderingIntentDefault);
+    CGDataProviderRelease(dataProvider);
+    [self.playerMaskLayer setContents:CFBridgingRelease(image)];
+#endif
     
     // TASK: Set layers into tree
     
@@ -539,7 +548,6 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         CGRect videoRect = CGRectMake(layerRect.origin.x, videoTopAlign, videoFittedWidth, videoFittedHeight);
         
         CGRect audienceRect = CGRectMake(videoRect.origin.x + videoRect.size.width/2.0, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
-        
         CGRect performerRect = CGRectMake(videoRect.origin.x, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
         
         [self.playerLayer setFrame:videoRect];

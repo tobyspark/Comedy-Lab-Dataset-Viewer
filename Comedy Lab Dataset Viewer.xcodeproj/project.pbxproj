@@ -26,6 +26,7 @@
 		A611FC3E1922E144008E0ABD /* CLDScene.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC3D1922E144008E0ABD /* CLDScene.m */; };
 		A6AAD8621949F0CE004CE36A /* CLDView.m in Sources */ = {isa = PBXBuildFile; fileRef = A6AAD8611949F0CE004CE36A /* CLDView.m */; };
 		A6AB02D61952DA5900298567 /* comedylab square 512.png in Resources */ = {isa = PBXBuildFile; fileRef = A6AB02D51952DA5900298567 /* comedylab square 512.png */; };
+		A6C458CC1976F3A800845CCC /* CLDRegister3D Audience video frame guides.png in Resources */ = {isa = PBXBuildFile; fileRef = A6C458CB1976F3A800845CCC /* CLDRegister3D Audience video frame guides.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +69,7 @@
 		A6AAD8601949F0CE004CE36A /* CLDView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CLDView.h; path = ../CLDView.h; sourceTree = "<group>"; };
 		A6AAD8611949F0CE004CE36A /* CLDView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CLDView.m; path = ../CLDView.m; sourceTree = "<group>"; };
 		A6AB02D51952DA5900298567 /* comedylab square 512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "comedylab square 512.png"; sourceTree = "<group>"; };
+		A6C458CB1976F3A800845CCC /* CLDRegister3D Audience video frame guides.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "CLDRegister3D Audience video frame guides.png"; sourceTree = "<group>"; };
 		A6ECBF8819258854001A5241 /* linmath.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = linmath.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -161,6 +163,7 @@
 		A611FBFD19225EBE008E0ABD /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				A6C458CB1976F3A800845CCC /* CLDRegister3D Audience video frame guides.png */,
 				A611FBFE19225EBE008E0ABD /* Comedy Lab Dataset Viewer-Info.plist */,
 				A611FBFF19225EBE008E0ABD /* InfoPlist.strings */,
 				A611FC0219225EBE008E0ABD /* main.m */,
@@ -269,6 +272,7 @@
 				A611FC1219225EBE008E0ABD /* Images.xcassets in Resources */,
 				A611FC0119225EBE008E0ABD /* InfoPlist.strings in Resources */,
 				A611FC0719225EBE008E0ABD /* Credits.rtf in Resources */,
+				A6C458CC1976F3A800845CCC /* CLDRegister3D Audience video frame guides.png in Resources */,
 				A6AB02D61952DA5900298567 /* comedylab square 512.png in Resources */,
 				A611FC1019225EBE008E0ABD /* MainMenu.xib in Resources */,
 			);

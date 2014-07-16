@@ -129,7 +129,7 @@ static NSString * const laughStateL = @"Laughing";
     
     SCNCamera *audienceCamera = [SCNCamera camera];
     [audienceCamera setAutomaticallyAdjustsZRange: YES];
-    float focalLength = 46;
+    float focalLength = 36;
     [audienceCamera setXFov: (180.0*35.0) / (M_PI*focalLength)];
     
     SCNNode *audienceCameraNode = [SCNNode node];
@@ -137,12 +137,19 @@ static NSString * const laughStateL = @"Laughing";
     [audienceCameraNode setCamera:audienceCamera];
     
     // Do two-part CATransform3DRotate to ensure orientation is correct
-    CATransform3D cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 0, 1);
-    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(46), 1, 0, 0);
+    // Camera angle has been measured to be -
+    // ~115-120deg down from vertical, ie. 60-65 up
+    CATransform3D cameraOrientation = CATransform3DMakeRotation(GLKMathDegreesToRadians(-92), 0, 0, 1);
+    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(1), 0, 1, 0);
+    cameraOrientation = CATransform3DRotate(cameraOrientation, GLKMathDegreesToRadians(58), 1, 0, 0);
     [audienceCameraNode setTransform:cameraOrientation];
     
     // Now set position in world coords rather than translate.
-    [audienceCameraNode setPosition: SCNVector3Make(-1000, -350, 4900)];
+    // Camera position has been measured to be -
+    // Scaff height from floor: 3.473m
+    // Camera slung below by ~15cm
+    // ie. z = 3330
+    [audienceCameraNode setPosition: SCNVector3Make(0, -250, 3230)];
     
     [scene.rootNode addChildNode:audienceCameraNode];
     
@@ -194,10 +201,28 @@ static NSString * const laughStateL = @"Laughing";
         [seatNode addChildNode:label];
 
         [scene.rootNode addChildNode:seatNode];
+        
+#ifdef CLDRegister3D
+        SCNNode *xLineFloor = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:kCLDRowToRowSpacing height:5 length:5 chamferRadius:0]];
+        SCNNode *yLineFloor = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:5 height:kCLDSeatToSeatSpacing length:5 chamferRadius:0]];
+        SCNNode *xLineMarker = [xLineFloor clone];
+        SCNNode *yLineMarker = [yLineFloor clone];
+        SCNNode *zLine = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:5 height:5 length:1232 chamferRadius:0]];
+        xLineMarker.position = SCNVector3Make(0, 0, 1232);
+        yLineMarker.position = SCNVector3Make(0, 0, 1232);
+        zLine.position = SCNVector3Make(0, 0, 1232/2);
+        
+        [seatNode addChildNode:xLineFloor];
+        [seatNode addChildNode:xLineMarker];
+        [seatNode addChildNode:yLineFloor];
+        [seatNode addChildNode:yLineMarker];
+        [seatNode addChildNode:zLine];
+#endif
     }
         
     // Add in floor, as a visual cue for setting camera
-    
+
+#ifndef CLDRegister3D
     for (CGFloat y = -2500; y <= 2500; y += 500)
     {
         SCNNode *line = [SCNNode nodeWithGeometry:[SCNBox boxWithWidth:6000 height:5 length:5 chamferRadius:0]];
@@ -210,6 +235,7 @@ static NSString * const laughStateL = @"Laughing";
         line.position = SCNVector3Make(x, 0, 0);
         [scene.rootNode addChildNode:line];
     }
+#endif
     
     // Add in a light.
     // Use diffuse rather than spot as we want to see the arrows, but set it approx where spotlight is so arrows light vaugely as per scene.
