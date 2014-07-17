@@ -52,16 +52,23 @@
             return ([[child name] hasPrefix:@"Audience"] && [[child childNodes] count] > 0);
         }];
         
-        [self setSubjectNodes:[audienceNodes arrayByAddingObject:[[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO]]];
-        [self setSubjectNode:self.subjectNodes[0]];
+        NSMutableArray* subjectNodeDicts = [NSMutableArray arrayWithCapacity:[audienceNodes count] + 1];
+        for (SCNNode* node in audienceNodes)
+        {
+            [subjectNodeDicts addObject:[@{@"node": node, @"zRot": @0, @"yRot": @0} mutableCopy]];
+        }
+        [subjectNodeDicts addObject:[@{@"node": [[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO], @"zRot": @0, @"yRot": @0} mutableCopy]];
+        
+        [self setSubjectNodes:[subjectNodeDicts copy]];
+        [self setSubjectNode:self.subjectNodes[0][@"node"]];
     }
     
     if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"/"])
     {
-        NSUInteger i = [self.subjectNodes indexOfObject:self.subjectNode];
+        NSUInteger i = [[self.subjectNodes valueForKey:@"node"] indexOfObject:self.subjectNode];
         i++;
         if (i >= [self.subjectNodes count]) i = 0;
-        [self setSubjectNode:self.subjectNodes[i]];
+        [self setSubjectNode:self.subjectNodes[i][@"node"]];
         NSLog(@"subjectNode: %@", [self.subjectNode name]);
     }
     
@@ -73,10 +80,10 @@
         // We have rotation as axis-angle and need rotation matrix.
         // Easiest way is to use MatLab's vrrotvec2mat function rather than convert here
         // So this, alas, writes some MatLab code to the console.
-        NSLog(@"%% Time %.01f for %@", [self currentTime], [[self.subjectNodes valueForKey:@"name"] componentsJoinedByString:@", "]);
+        NSLog(@"%% Time %.01f for %@", [self currentTime], [[[self.subjectNodes valueForKey:@"node"] valueForKey:@"name"] componentsJoinedByString:@", "]);
         for (NSUInteger i = 0; i < [self.subjectNodes count]; ++i)
         {
-            SCNNode* node = self.subjectNodes[i];
+            SCNNode* node = self.subjectNodes[i][@"node"];
             SCNVector4 r = node.rotation;
             NSString *matlabLine = [NSString stringWithFormat:@"offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])", (unsigned long)i, r.w, r.x, r.y, r.z];
             printf("%s\n", [matlabLine cStringUsingEncoding:NSASCIIStringEncoding]);
@@ -177,8 +184,10 @@
 {
     // Rotate in this order makes most sense for setting gaze
     
-    static CGFloat z = 0;
-    static CGFloat y = 0;
+    NSUInteger i = [[self.subjectNodes valueForKey:@"node"] indexOfObject:self.subjectNode];
+    
+    CGFloat z = [self.subjectNodes[i][@"zRot"] doubleValue];
+    CGFloat y = [self.subjectNodes[i][@"yRot"] doubleValue];
     
     z += dz;
     y += dy;
@@ -187,6 +196,9 @@
     transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(y), 0, 1, 0);
     
     [self.subjectNode setTransform:transform];
+    
+    self.subjectNodes[i][@"zRot"] = @(z);
+    self.subjectNodes[i][@"yRot"] = @(y);
     
     NSLog(@"Subject %@ yRot: %f zRot: %f", [self.subjectNode name], y, z);
 }
