@@ -288,9 +288,11 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     // TASK: Capture current point-of-view and set menu item for it's recall
     
     CATransform3D transform = self.freeSceneView.pointOfView.transform;
-    NSData *povData = [NSData dataWithBytes:&transform length:sizeof(CATransform3D)];
+    NSMutableData *povData = [NSMutableData dataWithBytes:&transform length:sizeof(CATransform3D)];
+    double orthographicScale = self.freeSceneView.pointOfView.camera.orthographicScale;
+    [povData appendBytes:&orthographicScale length:sizeof(double)];
     
-    [self.freeSceneViewPovs addObject:povData];
+    [self.freeSceneViewPovs addObject:[povData copy]];
 }
 
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender
@@ -299,18 +301,21 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
     
-    NSUInteger startIndexForPovs = 3;
+    NSUInteger startIndexForPovs = [viewMenu indexOfItemWithTitle:@"Add viewpoint"] + 1;
     NSUInteger povIndexToRecall = [viewMenu indexOfItem:sender] - startIndexForPovs;
     
     // Use NSData as [NSValue CATransform3DValue] can't be archived by NSDictionary or NSKeyedArchiver
     NSData *recalledPovData = [self.freeSceneViewPovs objectAtIndex:povIndexToRecall];
     CATransform3D recalledTransform;
-    [recalledPovData getBytes:&recalledTransform length:sizeof(CATransform3D)];
+    [recalledPovData getBytes:&recalledTransform range:NSMakeRange(0, sizeof(CATransform3D))];
+    double recalledScale;
+    [recalledPovData getBytes:&recalledScale range:NSMakeRange(sizeof(CATransform3D), sizeof(double))];
     
     // Use implicit animation as CABasicAnimation strangely won't work
     // But this requires setting duration back to zero for the freeView camera to work
     [SCNTransaction setAnimationDuration:1];
     [self.freeSceneView.pointOfView setTransform:recalledTransform];
+    [self.freeSceneView.pointOfView.camera setOrthographicScale:recalledScale];
     [SCNTransaction setCompletionBlock:^{
         [SCNTransaction setAnimationDuration:0];
     }];
@@ -514,7 +519,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         NSNumber *viewGaze = [metadata objectForKey:CLDMetadataKeyViewGaze];
         if (viewGaze) self.viewGaze = [viewGaze boolValue];
         
-        self.freeSceneViewPovs = [metadata objectForKey:CLDMetadataKeyViewPovs];
+        self.freeSceneViewPovs = [[metadata objectForKey:CLDMetadataKeyViewPovs] mutableCopy];
     }
     
     return metadataSuccess;
