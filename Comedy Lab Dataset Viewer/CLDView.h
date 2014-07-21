@@ -13,4 +13,5 @@
 @property (weak) SCNNode *cameraNode;
 @property (weak) SCNNode *subjectNode;
 @property (strong) NSArray *subjectNodes;
+@property NSTimeInterval timeOffset;
 @end

@@ -204,6 +204,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         // So we use this instead, which also allows us to make freeScene a SCNView with it's built-in camera UI.
         [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
             NSTimeInterval timeSecs = CMTimeGetSeconds(time);
+            
+            timeSecs += self.freeSceneView.timeOffset;
+            
             [self.audienceSceneLayer setCurrentTime:timeSecs];
             [self.performerSceneLayer setCurrentTime:timeSecs];
             [self.freeSceneView setCurrentTime:timeSecs];

@@ -171,6 +171,20 @@
         [self nudgeCameraNodeAroundZ:0 aroundY:0 aroundX:0];
     }
     
+#pragma mark Key handlers - temporal sync
+    
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"-"])
+    {
+        self.timeOffset -= 0.1;
+        
+        NSLog(@"timeOffset: %f", self.timeOffset);
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"+"] || [[theEvent charactersIgnoringModifiers] isEqualTo:@"="])
+    {
+        self.timeOffset += 0.1;
+        NSLog(@"timeOffset: %f", self.timeOffset);
+    }
+    
     // Pass onto 'moveUp/Down/Left/Right' methods
     else
     {
