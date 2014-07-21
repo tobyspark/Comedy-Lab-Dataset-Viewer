@@ -460,7 +460,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     [metadata setObject:viewBreathingBelt forKey:CLDMetadataKeyViewBreathingBelt];
     
     NSNumber *viewShoreHappiness = [NSNumber numberWithBool:self.viewShoreHappiness];
-    [metadata setObject:viewShoreHappiness forKey:CLDMetadataKeyViewBreathingBelt];
+    [metadata setObject:viewShoreHappiness forKey:CLDMetadataKeyViewShoreHappiness];
     
     NSNumber *viewGaze = [NSNumber numberWithBool:self.viewGaze];
     [metadata setObject:viewGaze forKey:CLDMetadataKeyViewGaze];
