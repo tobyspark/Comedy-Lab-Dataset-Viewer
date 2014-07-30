@@ -104,14 +104,19 @@ static NSString * const laughStateL = @"Laughing";
     // TASK: Create an arrow 500mm long.
     
     SCNNode *arrow = [SCNNode node];
+    [arrow setName:@"arrow"];
+    
+    SCNNode *arrowRotateOffset = [SCNNode node];
+    [arrowRotateOffset setName:@"arrowRotateOffset"];
+    [arrow addChildNode:arrowRotateOffset];
     
     SCNNode *cylinder = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:20 height:420]];
     [cylinder setPosition:SCNVector3Make(0, 210, 0)];
-    [arrow addChildNode:cylinder];
+    [arrowRotateOffset addChildNode:cylinder];
     
     SCNNode *cone = [SCNNode nodeWithGeometry:[SCNCone coneWithTopRadius:0 bottomRadius:40 height:80]];
     [cone setPosition:SCNVector3Make(0, 460, 0)];
-    [arrow addChildNode:cone];
+    [arrowRotateOffset addChildNode:cone];
     
     return arrow;
 }

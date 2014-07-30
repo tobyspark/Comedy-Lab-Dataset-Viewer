@@ -18,22 +18,22 @@
 
 -(IBAction)moveDown:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:0 aroundY:-1];
+    [self nudgeSubjectNodeAroundZ:0 aroundX:-1];
 }
 
 -(IBAction)moveUp:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:0 aroundY:1];
+    [self nudgeSubjectNodeAroundZ:0 aroundX:1];
 }
 
 -(IBAction)moveLeft:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:-1 aroundY:0];
+    [self nudgeSubjectNodeAroundZ:-1 aroundX:0];
 }
 
 -(IBAction)moveRight:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:1 aroundY:0];
+    [self nudgeSubjectNodeAroundZ:1 aroundX:0];
 }
 
 #pragma mark Key handlers - Config
@@ -84,8 +84,10 @@
         for (NSUInteger i = 0; i < [self.subjectNodes count]; ++i)
         {
             SCNNode* node = self.subjectNodes[i][@"node"];
-            SCNVector4 r = node.rotation;
-            NSString *matlabLine = [NSString stringWithFormat:@"offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])", (unsigned long)i, r.w, r.x, r.y, r.z];
+            SCNVector4 r = [[node childNodeWithName:@"arrowRotateOffset" recursively:YES] rotation];
+            // m = vrrotvec2mat(r) returns a matrix representation of the rotation defined by the axis-angle rotation vector, r.
+            // The rotation vector, r, is a row vector of four elements, where the first three elements specify the rotation axis, and the last element defines the angle.
+            NSString *matlabLine = [NSString stringWithFormat:@"offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])", (unsigned long)i+1, r.x, r.y, r.z, r.w];
             printf("%s\n", [matlabLine cStringUsingEncoding:NSASCIIStringEncoding]);
             
             /*
@@ -194,27 +196,30 @@
 
 # pragma mark Nudge methods
 
-- (void)nudgeSubjectNodeAroundZ:(CGFloat)dz aroundY:(CGFloat)dy
+- (void)nudgeSubjectNodeAroundZ:(CGFloat)dz aroundX:(CGFloat)dx
 {
     // Rotate in this order makes most sense for setting gaze
     
     NSUInteger i = [[self.subjectNodes valueForKey:@"node"] indexOfObject:self.subjectNode];
     
+    // We have to apply the static offset rotation after applying the animated rotation
+    SCNNode *node = [self.subjectNode childNodeWithName:@"arrowRotateOffset" recursively:YES];
+    
     CGFloat z = [self.subjectNodes[i][@"zRot"] doubleValue];
-    CGFloat y = [self.subjectNodes[i][@"yRot"] doubleValue];
+    CGFloat x = [self.subjectNodes[i][@"xRot"] doubleValue];
     
     z += dz;
-    y += dy;
+    x += dx;
     
     CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(z), 0, 0, 1);
-    transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(y), 0, 1, 0);
+    transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(x), 1, 0, 0);
     
-    [self.subjectNode setTransform:transform];
+    [node setTransform:transform];
     
     self.subjectNodes[i][@"zRot"] = @(z);
-    self.subjectNodes[i][@"yRot"] = @(y);
+    self.subjectNodes[i][@"xRot"] = @(x);
     
-    NSLog(@"Subject %@ yRot: %f zRot: %f", [self.subjectNode name], y, z);
+    NSLog(@"Subject %@ xRot: %f zRot: %f", [self.subjectNode name], x, z);
 }
 
 - (void)nudgeCameraNodeAroundZ:(CGFloat)dz aroundY:(CGFloat)dy aroundX:(CGFloat)dx
