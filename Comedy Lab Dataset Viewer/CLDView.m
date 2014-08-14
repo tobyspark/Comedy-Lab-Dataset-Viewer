@@ -55,9 +55,9 @@
         NSMutableArray* subjectNodeDicts = [NSMutableArray arrayWithCapacity:[audienceNodes count] + 1];
         for (SCNNode* node in audienceNodes)
         {
-            [subjectNodeDicts addObject:[@{@"node": node, @"zRot": @0, @"yRot": @0} mutableCopy]];
+            [subjectNodeDicts addObject:[@{@"node": node, @"zRot": @0, @"xRot": @0} mutableCopy]];
         }
-        [subjectNodeDicts addObject:[@{@"node": [[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO], @"zRot": @0, @"yRot": @0} mutableCopy]];
+        [subjectNodeDicts addObject:[@{@"node": [[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO], @"zRot": @0, @"xRot": @0} mutableCopy]];
         
         [self setSubjectNodes:[subjectNodeDicts copy]];
         [self setSubjectNode:self.subjectNodes[0][@"node"]];
