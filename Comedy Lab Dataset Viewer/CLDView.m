@@ -126,14 +126,73 @@
         // Easiest way is to use MatLab's vrrotvec2mat function rather than convert here
         // So this, alas, writes some MatLab code to the console.
         NSLog(@"%% Time %.01f for %@", [self currentTime], [[[self.subjectNodes valueForKey:@"node"] valueForKey:@"name"] componentsJoinedByString:@", "]);
+        for (NSDictionary *subjectNodeDict in self.subjectNodes)
+        {
+            NSLog(@"%@ xRot: %@ zRot: %@", [(SCNNode*)subjectNodeDict[@"node"] name], subjectNodeDict[@"xRot"], subjectNodeDict[@"zRot"]);
+        }
+        
         for (NSUInteger i = 0; i < [self.subjectNodes count]; ++i)
         {
+            // Vicon Exporter requires the rotation of raw mocap gaze to aligned gaze in global space. SceneKit transforms are heirachirical, so it's not simply a case of logging the rotation of the arrow offset node
+            
             SCNNode* node = self.subjectNodes[i][@"node"];
-            SCNVector4 r = [[node childNodeWithName:@"arrowRotateOffset" recursively:YES] rotation];
-            // m = vrrotvec2mat(r) returns a matrix representation of the rotation defined by the axis-angle rotation vector, r.
-            // The rotation vector, r, is a row vector of four elements, where the first three elements specify the rotation axis, and the last element defines the angle.
-            NSString *matlabLine = [NSString stringWithFormat:@"offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])", (unsigned long)i+1, r.x, r.y, r.z, r.w];
-            printf("%s\n", [matlabLine cStringUsingEncoding:NSASCIIStringEncoding]);
+            SCNNode* mocapNode = [node childNodeWithName:@"arrow" recursively:YES];
+            SCNNode* offsetNode = [node childNodeWithName:@"arrowRotateOffset" recursively:YES];
+            
+            CATransform3D mt = [[mocapNode presentationNode] worldTransform];
+            CATransform3D ot = [[offsetNode presentationNode] worldTransform];
+            
+//            {
+//            CATransform3D t = mt;
+//            NSLog(@"%@ at %.01f = \n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f",
+//                  [mocapNode name], [self currentTime],
+//                  t.m11, t.m12, t.m13, t.m14,
+//                  t.m21, t.m22, t.m23, t.m24,
+//                  t.m31, t.m32, t.m33, t.m34,
+//                  t.m41, t.m42, t.m43, t.m44);
+//            }
+//            {
+//            CATransform3D t = ot;
+//            NSLog(@"%@ at %.01f = \n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f",
+//                  [offsetNode name], [self currentTime],
+//                  t.m11, t.m12, t.m13, t.m14,
+//                  t.m21, t.m22, t.m23, t.m24,
+//                  t.m31, t.m32, t.m33, t.m34,
+//                  t.m41, t.m42, t.m43, t.m44);
+//            }
+            
+            printf("offsets{%lu} = [%f, %f, %f; %f, %f, %f; %f, %f, %f];\n",
+                   (unsigned long)i+1,
+                   ot.m11, ot.m12, ot.m13,
+                   ot.m21, ot.m22, ot.m23,
+                   ot.m31, ot.m32, ot.m33
+                   );
+            
+            
+            // 𝚁AB = 𝚁AO 𝚁OB = 𝚁⊤OA 𝚁OB
+            // ie. R = BA'
+            // ie. R = ot mt'
+            // CATransform3D is a row major matrix. When they say "m23", they mean row 2, column 3.
+            // MATLAB is column major
+            // ie. R = ot' mt
+            
+//            printf("offsets{%lu} = [%f, %f, %f; %f, %f, %f; %f, %f, %f]' * [%f, %f, %f; %f, %f, %f; %f, %f, %f];\n",
+//                   (unsigned long)i+1,
+//                   ot.m11, ot.m12, ot.m13,
+//                   ot.m21, ot.m22, ot.m23,
+//                   ot.m31, ot.m32, ot.m33,
+//                   mt.m11, mt.m12, mt.m13,
+//                   mt.m21, mt.m22, mt.m23,
+//                   mt.m31, mt.m32, mt.m33
+//                   );
+
+            
+//            SCNNode* node = self.subjectNodes[i][@"node"];
+//            SCNVector4 r = [[node childNodeWithName:@"arrowRotateOffset" recursively:YES] rotation];
+//            // m = vrrotvec2mat(r) returns a matrix representation of the rotation defined by the axis-angle rotation vector, r.
+//            // The rotation vector, r, is a row vector of four elements, where the first three elements specify the rotation axis, and the last element defines the angle.
+//            //printf("offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])\n", (unsigned long)i+1, r.x, r.y, r.z, r.w); // as per theory
+//            printf("offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])\n", (unsigned long)i+1, r.y, r.x, r.z, -r.w); // as per practice
             
             /*
              CATransform3D t = node.transform;
