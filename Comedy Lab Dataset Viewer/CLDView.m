@@ -72,6 +72,51 @@
         NSLog(@"subjectNode: %@", [self.subjectNode name]);
     }
     
+    // set offsets for perf3, 15m00
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@","])
+    {
+        NSUInteger i = 0;
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:86 aroundX:6];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:213 aroundX:-23];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:169 aroundX:-7];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:98 aroundX:8];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:-95 aroundX:-47];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:89 aroundX:-3];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:111 aroundX:4];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:-85 aroundX:106];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:-9 aroundX:2];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:-20 aroundX:-8];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:29 aroundX:14];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:-34 aroundX:-45];
+        
+        [self setSubjectNode:self.subjectNodes[i++][@"node"]];
+        [self nudgeSubjectNodeAroundZ:-49 aroundX:-6];
+    }
+    
     // Log out subject gaze with space. These are offsets as per ComedyLab Vicon Exporter
     
     else if (!([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualTo:@" "])
