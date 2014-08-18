@@ -12,7 +12,7 @@
 #import <GLKit/GLKit.h>
 #import "linmath.h"
 
-#define kCLDdatumPerSubject 6
+#define kCLDdatumPerSubject 10
 
 #define kCLDRowToRowSpacing 1100.0
 #define kCLDRowFirstOffset 2400.0
@@ -110,6 +110,11 @@ static NSString * const laughStateL = @"Laughing";
     [arrowRotateOffset setName:@"arrowRotateOffset"];
     [arrow addChildNode:arrowRotateOffset];
     
+    SCNNode *arrowRotateOrientateForwards = [SCNNode node];
+    [arrowRotateOrientateForwards setName:@"arrowRotateOrientateForwards"];
+    // Arrow direction from [0 1 0] to [1 0 0], as per Vicon Exporter subjectForwards for Audience
+    [arrowRotateOrientateForwards setRotation:SCNVector4Make(0, 0, 1, GLKMathDegreesToRadians(90))];
+    
     SCNNode *cylinder = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:20 height:420]];
     [cylinder setPosition:SCNVector3Make(0, 210, 0)];
     [arrowRotateOffset addChildNode:cylinder];
@@ -121,6 +126,41 @@ static NSString * const laughStateL = @"Laughing";
     return arrow;
 }
 
++ (SCNNode *) axes
+{
+    SCNNode *axes = [SCNNode node];
+    [axes setName:@"axes"];
+    
+    SCNNode *axisX = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:5 height:100]];
+    SCNNode *axisY = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:5 height:100]];
+    SCNNode *axisZ = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:5 height:100]];
+    
+    [axisX setRotation:SCNVector4Make(0, 0, 1, GLKMathDegreesToRadians(90))];
+    [axisZ setRotation:SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90))];
+    
+    [axisX setPosition:SCNVector3Make(50, 0, 0)];
+    [axisY setPosition:SCNVector3Make(0, 50, 0)];
+    [axisZ setPosition:SCNVector3Make(0, 0, 50)];
+    
+    SCNMaterial *red = [SCNMaterial material];
+    [[red diffuse] setContents:[NSColor redColor]];
+    [[axisX geometry] setMaterials:@[red]];
+    
+    SCNMaterial *green = [SCNMaterial material];
+    [[green diffuse] setContents:[NSColor greenColor]];
+    [[axisY geometry] setMaterials:@[green]];
+    
+    SCNMaterial *blue = [SCNMaterial material];
+    [[blue diffuse] setContents:[NSColor blueColor]];
+    [[axisZ geometry] setMaterials:@[blue]];
+    
+    [axes addChildNode:axisX];
+    [axes addChildNode:axisY];
+    [axes addChildNode:axisZ];
+    
+    return axes;
+}
+
 @end
 
 @implementation SCNScene (ComedyLabAdditions)
@@ -128,6 +168,8 @@ static NSString * const laughStateL = @"Laughing";
 + (instancetype)comedyLabScene
 {
     SCNScene *scene = [SCNScene scene];
+    
+    [[scene rootNode] addChildNode:[SCNNode axes]];
     
     // Add in cameras. Two that were actually in experiment, to align onto video. One to use as a roving eye. Values here are eyeballed.
     // 35mm equivalent focal length for JVC GY-HM150 at max wide = 39mm.
@@ -268,7 +310,10 @@ static NSString * const laughStateL = @"Laughing";
     // TASK: Parse CSV file exported from Vicon .V files via MATLAB
     // https://github.com/tobyspark/ComedyLab/tree/master/Vicon%20Exporter
     
-    // CSV header format is 'Time' then 'subject/parameter', parameters are x,y,z,gx,gy,gz
+    // CSV header format is 'Time' then 'subject/parameter', parameters are x,y,z,rx,ry,rz,ra,gx,gy,gz
+    // x,y,z = position
+    // rx, ry, rz, ra = rotation as axis-angle
+    // gx, gy, gz = gaze direction
     // ie. Time,Performer_Hat/x,Performer_Hat/y,Performer_Hat/z,Performer_Hat/gx,Performer_Hat/gy,Performer_Hat/gz,Audience_01_Hat/x,Audience_01_Hat/y,Audience_01_Hat/z,Audience_01_Hat/gx,Audience_01_Hat/gy,Audience_01_Hat/gz,Audience_02/x...
     
     NSScanner *scanner = [NSScanner scannerWithString:fileString];
@@ -319,10 +364,12 @@ static NSString * const laughStateL = @"Laughing";
     NSMutableArray *timeArray = [NSMutableArray arrayWithCapacity:numberOfLines];
     NSMutableArray *subjectPositionArray = [NSMutableArray arrayWithCapacity:subjects];
     NSMutableArray *subjectRotationArray = [NSMutableArray arrayWithCapacity:subjects];
+    NSMutableArray *subjectGazeDirectionArray = [NSMutableArray arrayWithCapacity:subjects];
     for (NSUInteger i = 0; i < subjects; i++)
     {
         subjectPositionArray[i] = [NSMutableArray arrayWithCapacity:numberOfLines];
         subjectRotationArray[i] = [NSMutableArray arrayWithCapacity:numberOfLines];
+        subjectGazeDirectionArray[i] = [NSMutableArray arrayWithCapacity:numberOfLines];
     }
     
     CGFloat startTime = 0.0;
@@ -366,11 +413,13 @@ static NSString * const laughStateL = @"Laughing";
             {
                 subjectPositionArray[subject][i] = [NSValue valueWithSCNVector3:SCNVector3Make(data[0], data[1], data[2])];
                 
+                // Axis-Angle from Vicon .V file: need to negate the angle to apply to an object in this world
+                subjectRotationArray[subject][i] = [NSValue valueWithSCNVector4:SCNVector4Make(data[3], data[4], data[5], -data[6])];
+                
                 // Gaze direction vector is [gx, gy, gz], ie. data[3,4,5]
                 // Arrows have direction vector [0, 1, 0] ie. SCNCylinder draws up y-axis)
                 
-                
-                subjectRotationArray[subject][i] = [NSValue valueWithSCNVector4:rotateArrowToVec(data[3], data[4], data[5])];
+                subjectGazeDirectionArray[subject][i] = [NSValue valueWithSCNVector4:rotateArrowToVec(data[7], data[8], data[9])];
                 
                 dataColumn = 0;
                 subject++;
@@ -399,8 +448,12 @@ static NSString * const laughStateL = @"Laughing";
             SCNNode *subjectNode = [SCNNode node];
             [subjectNode setName:columnHeader];
             
-            SCNNode* subjectArrowNode = [SCNNode arrow];
-            [subjectNode addChildNode:subjectArrowNode];
+            SCNNode* subjectRotationNode = [SCNNode axes];
+            [subjectRotationNode setName:@"mocap arrow"];
+            [subjectNode addChildNode:subjectRotationNode];
+            
+            SCNNode* subjectGazeNode = [SCNNode axes];
+            [subjectNode addChildNode:subjectGazeNode];
             
             CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
             positionAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
@@ -412,15 +465,25 @@ static NSString * const laughStateL = @"Laughing";
             positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
             [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
             
-            CAKeyframeAnimation *rotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
-            rotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-            rotationAnimation.duration = finalTime;
-            rotationAnimation.removedOnCompletion = NO;
-            rotationAnimation.keyTimes = timeArray;
-            rotationAnimation.calculationMode = kCAAnimationDiscrete;
-            rotationAnimation.values = subjectRotationArray[i];
-            rotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
-            [subjectArrowNode addAnimation:rotationAnimation forKey:@"fingers crossed for rotations"];
+            CAKeyframeAnimation *mocapRotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
+            mocapRotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            mocapRotationAnimation.duration = finalTime;
+            mocapRotationAnimation.removedOnCompletion = NO;
+            mocapRotationAnimation.keyTimes = timeArray;
+            mocapRotationAnimation.calculationMode = kCAAnimationDiscrete;
+            mocapRotationAnimation.values = subjectRotationArray[i];
+            mocapRotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+            [subjectRotationNode addAnimation:mocapRotationAnimation forKey:@"fingers crossed for mocap rotations"];
+            
+            CAKeyframeAnimation *gazeRotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
+            gazeRotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            gazeRotationAnimation.duration = finalTime;
+            gazeRotationAnimation.removedOnCompletion = NO;
+            gazeRotationAnimation.keyTimes = timeArray;
+            gazeRotationAnimation.calculationMode = kCAAnimationDiscrete;
+            gazeRotationAnimation.values = subjectGazeDirectionArray[i];
+            gazeRotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
+            [subjectGazeNode addAnimation:gazeRotationAnimation forKey:@"fingers crossed for gaze rotations"];
             
             [self.rootNode addChildNode:subjectNode];
         }
