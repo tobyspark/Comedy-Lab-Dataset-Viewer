@@ -106,22 +106,13 @@ static NSString * const laughStateL = @"Laughing";
     SCNNode *arrow = [SCNNode node];
     [arrow setName:@"arrow"];
     
-    SCNNode *arrowRotateOffset = [SCNNode node];
-    [arrowRotateOffset setName:@"arrowRotateOffset"];
-    [arrow addChildNode:arrowRotateOffset];
-    
-    SCNNode *arrowRotateOrientateForwards = [SCNNode node];
-    [arrowRotateOrientateForwards setName:@"arrowRotateOrientateForwards"];
-    // Arrow direction from [0 1 0] to [1 0 0], as per Vicon Exporter subjectForwards for Audience
-    [arrowRotateOrientateForwards setRotation:SCNVector4Make(0, 0, 1, GLKMathDegreesToRadians(90))];
-    
     SCNNode *cylinder = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:20 height:420]];
     [cylinder setPosition:SCNVector3Make(0, 210, 0)];
-    [arrowRotateOffset addChildNode:cylinder];
+    [arrow addChildNode:cylinder];
     
     SCNNode *cone = [SCNNode nodeWithGeometry:[SCNCone coneWithTopRadius:0 bottomRadius:40 height:80]];
     [cone setPosition:SCNVector3Make(0, 460, 0)];
-    [arrowRotateOffset addChildNode:cone];
+    [arrow addChildNode:cone];
     
     return arrow;
 }
@@ -131,14 +122,14 @@ static NSString * const laughStateL = @"Laughing";
     SCNNode *axes = [SCNNode node];
     [axes setName:@"axes"];
     
-    SCNNode *axisX = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:5 height:100]];
+    SCNNode *axisX = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:5 height:500]];
     SCNNode *axisY = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:5 height:100]];
     SCNNode *axisZ = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:5 height:100]];
     
     [axisX setRotation:SCNVector4Make(0, 0, 1, GLKMathDegreesToRadians(90))];
     [axisZ setRotation:SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90))];
     
-    [axisX setPosition:SCNVector3Make(50, 0, 0)];
+    [axisX setPosition:SCNVector3Make(250, 0, 0)];
     [axisY setPosition:SCNVector3Make(0, 50, 0)];
     [axisZ setPosition:SCNVector3Make(0, 0, 50)];
     
@@ -448,11 +439,14 @@ static NSString * const laughStateL = @"Laughing";
             SCNNode *subjectNode = [SCNNode node];
             [subjectNode setName:columnHeader];
             
-            SCNNode* subjectRotationNode = [SCNNode axes];
-            [subjectRotationNode setName:@"mocap arrow"];
+            SCNNode* subjectRotationNode = [SCNNode node];
+            [subjectRotationNode setName:@"mocap"];
+            [subjectRotationNode addChildNode:[SCNNode axes]];
             [subjectNode addChildNode:subjectRotationNode];
             
-            SCNNode* subjectGazeNode = [SCNNode axes];
+            SCNNode* subjectGazeNode = [SCNNode node];
+            [subjectGazeNode setName:@"gaze"];
+            [subjectGazeNode addChildNode:[SCNNode arrow]];
             [subjectNode addChildNode:subjectGazeNode];
             
             CAKeyframeAnimation *positionAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];

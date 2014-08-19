@@ -18,22 +18,32 @@
 
 -(IBAction)moveDown:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:0 aroundX:-1];
+    [self nudgeSubjectNodeAroundZ:0 aroundX:-1 aroundY:0];
 }
 
 -(IBAction)moveUp:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:0 aroundX:1];
+    [self nudgeSubjectNodeAroundZ:0 aroundX:1 aroundY:0];
 }
 
 -(IBAction)moveLeft:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:-1 aroundX:0];
+    [self nudgeSubjectNodeAroundZ:-1 aroundX:0 aroundY:0];
 }
 
 -(IBAction)moveRight:(id)sender
 {
-    [self nudgeSubjectNodeAroundZ:1 aroundX:0];
+    [self nudgeSubjectNodeAroundZ:1 aroundX:0 aroundY:0];
+}
+
+-(void)scrollPageUp:(id)sender
+{
+    [self nudgeSubjectNodeAroundZ:0 aroundX:0  aroundY:1];
+}
+
+-(void)scrollPageDown:(id)sender
+{
+    [self nudgeSubjectNodeAroundZ:0 aroundX:0  aroundY:-1];
 }
 
 #pragma mark Key handlers - Config
@@ -57,7 +67,7 @@
         {
             [subjectNodeDicts addObject:[@{@"node": node, @"zRot": @0, @"xRot": @0} mutableCopy]];
         }
-        [subjectNodeDicts addObject:[@{@"node": [[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO], @"zRot": @0, @"xRot": @0} mutableCopy]];
+        [subjectNodeDicts addObject:[@{@"node": [[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO], @"zRot": @0, @"xRot": @0, @"yRot": @0} mutableCopy]];
         
         [self setSubjectNodes:[subjectNodeDicts copy]];
         [self setSubjectNode:self.subjectNodes[0][@"node"]];
@@ -78,131 +88,110 @@
         NSUInteger i = 0;
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:-162 aroundX:-19];
+        [self nudgeSubjectNodeAroundZ:-78 aroundX:-19 aroundY:15];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:-44 aroundX:-3];
+        [self nudgeSubjectNodeAroundZ:39 aroundX:-3 aroundY:11];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:-83 aroundX:6];
+        [self nudgeSubjectNodeAroundZ:7 aroundX:193 aroundY:8];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:-164 aroundX:-14];
+        [self nudgeSubjectNodeAroundZ:-75 aroundX:6 aroundY:29];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:170 aroundX:11];
+        [self nudgeSubjectNodeAroundZ:261 aroundX:-182 aroundY:10];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:-177 aroundX:-32];
+        [self nudgeSubjectNodeAroundZ:-82 aroundX:2 aroundY:31];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:195 aroundX:-29];
+        [self nudgeSubjectNodeAroundZ:286 aroundX:5 aroundY:28];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:186 aroundX:12];
+        [self nudgeSubjectNodeAroundZ:259 aroundX:-179 aroundY:8];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:93 aroundX:0];
+        [self nudgeSubjectNodeAroundZ:178 aroundX:0 aroundY:-5];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:72 aroundX:-9];
+        [self nudgeSubjectNodeAroundZ:165 aroundX:-1 aroundY:7];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:54 aroundX:2];
+        [self nudgeSubjectNodeAroundZ:135 aroundX:161 aroundY:4];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:44 aroundX:-27];
+        [self nudgeSubjectNodeAroundZ:151 aroundX:-2 aroundY:34];
         
         [self setSubjectNode:self.subjectNodes[i++][@"node"]];
-        [self nudgeSubjectNodeAroundZ:-141 aroundX:-9];
+        [self nudgeSubjectNodeAroundZ:-62 aroundX:9 aroundY:32];
     }
     
     // Log out subject gaze with space. These are offsets as per ComedyLab Vicon Exporter
     
     else if (!([theEvent modifierFlags] & NSAlternateKeyMask) && [[theEvent charactersIgnoringModifiers] isEqualTo:@" "])
     {
-        // Get align info out of app and back into MatLab Vicon Exporter.
-        // We have rotation as axis-angle and need rotation matrix.
-        // Easiest way is to use MatLab's vrrotvec2mat function rather than convert here
-        // So this, alas, writes some MatLab code to the console.
+        // First, Log the time and offset as we have set them
         NSLog(@"%% Time %.01f for %@", [self currentTime], [[[self.subjectNodes valueForKey:@"node"] valueForKey:@"name"] componentsJoinedByString:@", "]);
-        for (NSDictionary *subjectNodeDict in self.subjectNodes)
-        {
-            NSLog(@"%@ xRot: %@ zRot: %@", [(SCNNode*)subjectNodeDict[@"node"] name], subjectNodeDict[@"xRot"], subjectNodeDict[@"zRot"]);
-        }
-        
         for (NSUInteger i = 0; i < [self.subjectNodes count]; ++i)
         {
-            // Vicon Exporter requires the rotation of raw mocap gaze to aligned gaze in global space. SceneKit transforms are heirachirical, so it's not simply a case of logging the rotation of the arrow offset node
+            self.subjectNode = self.subjectNodes[i][@"node"];
+            [self nudgeSubjectNodeAroundZ:0 aroundX:0 aroundY:0]; // Log
+        }
+        
+        // Now write MATLAB code to console which will generate correct offsets from this viewer's modelling with SceneKit
+        for (NSUInteger i = 0; i < [self.subjectNodes count]; ++i)
+        {
+            // Vicon Exporter calculates gaze vector as
+            // gaze = [1 0 0] * rm * subjectOffsets{subjectIndex};
+            // rm = Rotation matrix from World to Mocap = Rwm
+            // subjectOffsets = rotation matrix from Mocap to Offset (ie Gaze) = Rmo
+            
+            // In this viewer, we model a hierarchy of
+            // Origin Node -> Audience Node -> Mocap Node -> Offset Node, rendered as axes.
+            // The Mocap node is rotated with Rmw (ie. rm') to comply with reality.
+            // Aha. This is because in this viewer we are rotating the coordinate space not a point as per exporter
+            
+            // By manually rotating the offset node so it's axes register with the head pose in video, we should be able to export a rotation matrix
+            // We need to get Rmo as rotation of point
+            // Rmo as rotation of point = Rom as rotation of coordinate space
+            
+            // In this viewer, we have
+            // Note i. these are rotations of coordinate space
+            // Note ii. we're doing this by taking 3x3 rotation matrix out of 4x4 translation matrix
+            // [mocapNode worldTransform] = Rwm
+            // [offsetNode transform] = Rmo
+            // [offsetNode worldTransform] = Rwo
+            
+            // We want Rom as rotation of coordinate space
+            // Therefore Offset = Rom = Rmo' = [offsetNode transform]'
+            
+            // CATransform3D is however transposed from rotation matrix in MATLAB.
+            // Therefore Offset = [offsetNode transform]
             
             SCNNode* node = self.subjectNodes[i][@"node"];
-            SCNNode* mocapNode = [node childNodeWithName:@"arrow" recursively:YES];
-            SCNNode* offsetNode = [node childNodeWithName:@"arrowRotateOffset" recursively:YES];
+            SCNNode* mocapNode = [node childNodeWithName:@"mocap" recursively:YES];
+            SCNNode* offsetNode = [mocapNode childNodeWithName:@"axes" recursively:YES];
             
-            CATransform3D mt = [[mocapNode presentationNode] worldTransform];
-            CATransform3D ot = [[offsetNode presentationNode] worldTransform];
+            // mocapNode has rotation animation applied to it. Use presentation node to get rendered position.
+            mocapNode = [mocapNode presentationNode];
             
-//            {
-//            CATransform3D t = mt;
-//            NSLog(@"%@ at %.01f = \n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f",
-//                  [mocapNode name], [self currentTime],
-//                  t.m11, t.m12, t.m13, t.m14,
-//                  t.m21, t.m22, t.m23, t.m24,
-//                  t.m31, t.m32, t.m33, t.m34,
-//                  t.m41, t.m42, t.m43, t.m44);
-//            }
-//            {
-//            CATransform3D t = ot;
-//            NSLog(@"%@ at %.01f = \n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f",
-//                  [offsetNode name], [self currentTime],
-//                  t.m11, t.m12, t.m13, t.m14,
-//                  t.m21, t.m22, t.m23, t.m24,
-//                  t.m31, t.m32, t.m33, t.m34,
-//                  t.m41, t.m42, t.m43, t.m44);
-//            }
+            CATransform3D Rom = [offsetNode transform];
             
             printf("offsets{%lu} = [%f, %f, %f; %f, %f, %f; %f, %f, %f];\n",
                    (unsigned long)i+1,
-                   ot.m11, ot.m12, ot.m13,
-                   ot.m21, ot.m22, ot.m23,
-                   ot.m31, ot.m32, ot.m33
+                   Rom.m11, Rom.m12, Rom.m13,
+                   Rom.m21, Rom.m22, Rom.m23,
+                   Rom.m31, Rom.m32, Rom.m33
                    );
             
+            // BUT! For this to actually work, this requires Vicon Exporter to be
+            // [1 0 0] * subjectOffsets{subjectIndex} * rm;
+            // note matrix multiplication order
             
-            // 𝚁AB = 𝚁AO 𝚁OB = 𝚁⊤OA 𝚁OB
-            // ie. R = BA'
-            // ie. R = ot mt'
-            // CATransform3D is a row major matrix. When they say "m23", they mean row 2, column 3.
-            // MATLAB is column major
-            // ie. R = ot' mt
-            
-//            printf("offsets{%lu} = [%f, %f, %f; %f, %f, %f; %f, %f, %f]' * [%f, %f, %f; %f, %f, %f; %f, %f, %f];\n",
-//                   (unsigned long)i+1,
-//                   ot.m11, ot.m12, ot.m13,
-//                   ot.m21, ot.m22, ot.m23,
-//                   ot.m31, ot.m32, ot.m33,
-//                   mt.m11, mt.m12, mt.m13,
-//                   mt.m21, mt.m22, mt.m23,
-//                   mt.m31, mt.m32, mt.m33
-//                   );
-
-            
-//            SCNNode* node = self.subjectNodes[i][@"node"];
-//            SCNVector4 r = [[node childNodeWithName:@"arrowRotateOffset" recursively:YES] rotation];
-//            // m = vrrotvec2mat(r) returns a matrix representation of the rotation defined by the axis-angle rotation vector, r.
-//            // The rotation vector, r, is a row vector of four elements, where the first three elements specify the rotation axis, and the last element defines the angle.
-//            //printf("offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])\n", (unsigned long)i+1, r.x, r.y, r.z, r.w); // as per theory
-//            printf("offsets{%lu} = vrrotvec2mat([%f, %f, %f, %f])\n", (unsigned long)i+1, r.y, r.x, r.z, -r.w); // as per practice
-            
-            /*
-             CATransform3D t = node.transform;
-             NSLog(@"%@ at %.01f = [%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f]",
-             [node name], [self currentTime],
-             t.m11, t.m12, t.m13, t.m14,
-             t.m21, t.m22, t.m23, t.m24,
-             t.m31, t.m32, t.m33, t.m34,
-             t.m41, t.m42, t.m43, t.m44);
-             */
+            // Isn't 3D maths fun.
+            // "The interpretation of a rotation matrix can be subject to many ambiguities."
+            // http://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
         }
     }
     
@@ -300,30 +289,34 @@
 
 # pragma mark Nudge methods
 
-- (void)nudgeSubjectNodeAroundZ:(CGFloat)dz aroundX:(CGFloat)dx
+- (void)nudgeSubjectNodeAroundZ:(CGFloat)dz aroundX:(CGFloat)dx aroundY:(CGFloat)dy
 {
     // Rotate in this order makes most sense for setting gaze
     
     NSUInteger i = [[self.subjectNodes valueForKey:@"node"] indexOfObject:self.subjectNode];
     
     // We have to apply the static offset rotation after applying the animated rotation
-    SCNNode *node = [[self.subjectNode childNodeWithName:@"mocap arrow" recursively:YES] childNodeWithName:@"arrowRotateOffset" recursively:YES];
+    SCNNode *node = [[self.subjectNode childNodeWithName:@"mocap" recursively:NO] childNodeWithName:@"axes" recursively:NO];
     
     CGFloat z = [self.subjectNodes[i][@"zRot"] doubleValue];
     CGFloat x = [self.subjectNodes[i][@"xRot"] doubleValue];
+    CGFloat y = [self.subjectNodes[i][@"yRot"] doubleValue];
     
     z += dz;
     x += dx;
+    y += dy;
     
     CATransform3D transform = CATransform3DMakeRotation(GLKMathDegreesToRadians(z), 0, 0, 1);
     transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(x), 1, 0, 0);
+    transform = CATransform3DRotate(transform, GLKMathDegreesToRadians(y), 0, 1, 0);
     
     [node setTransform:transform];
     
     self.subjectNodes[i][@"zRot"] = @(z);
     self.subjectNodes[i][@"xRot"] = @(x);
+    self.subjectNodes[i][@"yRot"] = @(y);
     
-    NSLog(@"Subject %@ xRot: %f zRot: %f", [self.subjectNode name], x, z);
+    NSLog(@"Subject %@ xRot: %f yRot:%f zRot: %f", [self.subjectNode name], x, y, z);
 }
 
 - (void)nudgeCameraNodeAroundZ:(CGFloat)dz aroundY:(CGFloat)dy aroundX:(CGFloat)dx
