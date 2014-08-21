@@ -22,4 +22,10 @@
 
 - (BOOL)addWithDatasetURL:(NSURL *)url error:(NSError **)error;
 
+- (void) setCameraNodePosition:(SCNNode *)cameraNode withData:(NSData *)data;
+
+- (NSData *)positionDataWithCameraNode:(SCNNode *)cameraNode;
+
+- (NSArray *)standardCameraPositions;
+
 @end

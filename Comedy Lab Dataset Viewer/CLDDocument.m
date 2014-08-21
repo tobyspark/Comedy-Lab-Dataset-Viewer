@@ -130,9 +130,16 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     [viewMenu setDelegate:self];
     
     // TASK: Get going for user
+    
     self.scene = [SCNScene comedyLabScene];
+    if ([self.freeSceneViewPovs count] < 3)
+    {
+        [self setFreeSceneViewPovs:[[self.scene standardCameraPositions] mutableCopy]];
+    }
+    
     [self performSelectorInBackground:@selector(loadMocap) withObject:nil];
     [self performSelectorInBackground:@selector(loadDataset) withObject:nil];
+    
     [self loadMovie];
     
     [self.player play];
@@ -290,12 +297,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
 {
     // TASK: Capture current point-of-view and set menu item for it's recall
     
-    CATransform3D transform = self.freeSceneView.pointOfView.transform;
-    NSMutableData *povData = [NSMutableData dataWithBytes:&transform length:sizeof(CATransform3D)];
-    double orthographicScale = self.freeSceneView.pointOfView.camera.orthographicScale;
-    [povData appendBytes:&orthographicScale length:sizeof(double)];
+    NSData *povData = [self.scene positionDataWithCameraNode:self.freeSceneView.pointOfView];
     
-    [self.freeSceneViewPovs addObject:[povData copy]];
+    [self.freeSceneViewPovs addObject:povData];
 }
 
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender
@@ -306,22 +310,21 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     NSUInteger startIndexForPovs = [viewMenu indexOfItemWithTitle:@"Add viewpoint"] + 1;
     NSUInteger povIndexToRecall = [viewMenu indexOfItem:sender] - startIndexForPovs;
-    
-    // Use NSData as [NSValue CATransform3DValue] can't be archived by NSDictionary or NSKeyedArchiver
     NSData *recalledPovData = [self.freeSceneViewPovs objectAtIndex:povIndexToRecall];
-    CATransform3D recalledTransform;
-    [recalledPovData getBytes:&recalledTransform range:NSMakeRange(0, sizeof(CATransform3D))];
-    double recalledScale;
-    [recalledPovData getBytes:&recalledScale range:NSMakeRange(sizeof(CATransform3D), sizeof(double))];
     
     // Use implicit animation as CABasicAnimation strangely won't work
     // But this requires setting duration back to zero for the freeView camera to work
+    [SCNTransaction begin];
+    
     [SCNTransaction setAnimationDuration:1];
-    [self.freeSceneView.pointOfView setTransform:recalledTransform];
-    [self.freeSceneView.pointOfView.camera setOrthographicScale:recalledScale];
+    
     [SCNTransaction setCompletionBlock:^{
         [SCNTransaction setAnimationDuration:0];
     }];
+
+    [self.scene setCameraNodePosition:self.freeSceneView.pointOfView withData:recalledPovData];
+    
+    [SCNTransaction commit];
 }
 
 - (IBAction) toggleAudienceMask:(id)sender

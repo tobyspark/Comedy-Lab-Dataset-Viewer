@@ -915,4 +915,73 @@ static NSString * const laughStateL = @"Laughing";
     return YES;
 }
 
+- (void) setCameraNodePosition:(SCNNode *)cameraNode withData:(NSData *)data
+{
+    CATransform3D recalledTransform;
+    [data getBytes:&recalledTransform range:NSMakeRange(0, sizeof(CATransform3D))];
+    double recalledScale;
+    [data getBytes:&recalledScale range:NSMakeRange(sizeof(CATransform3D), sizeof(double))];
+    
+    [cameraNode setTransform:recalledTransform];
+    [cameraNode.camera setOrthographicScale:recalledScale];
+}
+
+- (NSData *)positionDataWithCameraNode:(SCNNode *)cameraNode
+{
+    // Use NSData as [NSValue CATransform3DValue] can't be archived by NSDictionary or NSKeyedArchiver
+    // And it turns out we need to bundle orthoScale along with the transform also
+
+    CATransform3D transform = cameraNode.transform;
+    NSMutableData *povData = [NSMutableData dataWithBytes:&transform length:sizeof(CATransform3D)];
+    double orthographicScale = cameraNode.camera.orthographicScale;
+    [povData appendBytes:&orthographicScale length:sizeof(double)];
+    
+    return [povData copy];
+}
+
+- (NSArray *)standardCameraPositions
+{
+    // Extents
+    // x: 0:6000
+    // y: -2500:2500
+    // z: 0:2000
+    
+    NSMutableArray *cameraPositions = [NSMutableArray arrayWithCapacity:3];
+    
+    SCNNode *orthoCameraNode = [self.rootNode childNodeWithName:@"Camera-Orthographic" recursively:NO];
+    
+    // Push
+    CATransform3D transform = orthoCameraNode.transform;
+    double scale = orthoCameraNode.camera.orthographicScale;
+    
+    // Set Top
+    orthoCameraNode.position = SCNVector3Make(2000, 0, 6000);
+    orthoCameraNode.rotation = SCNVector4Make(0, 0, 0, 0);
+    orthoCameraNode.camera.orthographicScale = 3000;
+    
+    [cameraPositions addObject:[self positionDataWithCameraNode:orthoCameraNode]];
+    
+    // Set Side
+    orthoCameraNode.position = SCNVector3Make(3000, -6000, 1000);
+    orthoCameraNode.rotation = SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90));
+    orthoCameraNode.camera.orthographicScale = 2000;
+    
+    [cameraPositions addObject:[self positionDataWithCameraNode:orthoCameraNode]];
+    
+    // Set Front
+    CATransform3D rotTransform = CATransform3DMakeRotation(GLKMathDegreesToRadians(-90), 0, 1, 0);
+    rotTransform = CATransform3DRotate(rotTransform, GLKMathDegreesToRadians(-90), 0, 0, 1);
+    orthoCameraNode.transform = rotTransform;
+    orthoCameraNode.position = SCNVector3Make(-6000, 0, 1000);
+    orthoCameraNode.camera.orthographicScale = 2000;
+    
+    [cameraPositions addObject:[self positionDataWithCameraNode:orthoCameraNode]];
+    
+    // Pop
+    orthoCameraNode.transform = transform;
+    orthoCameraNode.camera.orthographicScale = scale;
+    
+    return [cameraPositions copy];
+}
+
 @end
