@@ -8,8 +8,11 @@
 
 #import "CLDDocument.h"
 
-static NSString * const CLDSceneFileName = @"Scene.dae";
-static NSString * const CLDMetadataFileName = @"Metadata.plist";
+static NSString * const CLDPackageMovieFileName = @"movie";
+static NSString * const CLDPackageMocapFileName = @"mocap.csv";
+static NSString * const CLDPackageDatasetPath = @"dataset.csv";
+static NSString * const CLDPackageSceneFileName = @"Scene.dae";
+static NSString * const CLDPackageMetadataFileName = @"Metadata.plist";
 static NSString * const CLDMetadataKeyMoviePath = @"moviePath";
 static NSString * const CLDMetadataKeyMocapPath = @"mocapPath";
 static NSString * const CLDMetadataKeyDatasetPath = @"datasetPath";
@@ -204,37 +207,38 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         return;
     }
     
-    AVPlayer *player = [AVPlayer playerWithURL:self.movieURL];
-    if (player)
+    NSURL *url = [[self fileURL] URLByAppendingPathComponent:CLDPackageMovieFileName];
+    // We should really check if AVPlayerItem status is AVPlayerItemStatusFailed
+    // But that is asynchronos and it would be over the top for this app to handle that.
+    if (![[NSFileManager defaultManager] fileExistsAtPath:[url path]])
     {
-        // AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions), see early commits
-        // So we use this instead, which also allows us to make freeScene a SCNView with it's built-in camera UI.
-        [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
-            NSTimeInterval timeSecs = CMTimeGetSeconds(time);
-            
-            timeSecs += self.freeSceneView.timeOffset;
-            
-            [self.audienceSceneLayer setCurrentTime:timeSecs];
-            [self.performerSceneLayer setCurrentTime:timeSecs];
-            [self.freeSceneView setCurrentTime:timeSecs];
-        }];
-        
-        [self movieSeekToSceneStart];
-        
-        [player setVolume:self.movieVolume];
-        
-        self.player = player;
-        
-        // These should KVO or somesuch...
-        [self.playerView setPlayer:self.player];
-        [self.playerLayer setPlayer:self.player];
-        
-        NSLog(@"Loaded movie: %@", self.movieURL);
+        url = self.movieURL;
     }
-    else
-    {
-        NSLog(@"Failed to load movie: %@", self.movieURL);
-    }
+    
+    NSLog(@"Loading movie: %@", url);
+
+    AVPlayer *player = [AVPlayer playerWithURL:url];
+    // AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions), see early commits
+    // So we use this instead, which also allows us to make freeScene a SCNView with it's built-in camera UI.
+    [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
+        NSTimeInterval timeSecs = CMTimeGetSeconds(time);
+        
+        timeSecs += self.freeSceneView.timeOffset;
+        
+        [self.audienceSceneLayer setCurrentTime:timeSecs];
+        [self.performerSceneLayer setCurrentTime:timeSecs];
+        [self.freeSceneView setCurrentTime:timeSecs];
+    }];
+    
+    [self movieSeekToSceneStart];
+    
+    [player setVolume:self.movieVolume];
+    
+    self.player = player;
+    
+    // These should KVO or somesuch...
+    [self.playerView setPlayer:self.player];
+    [self.playerLayer setPlayer:self.player];
 }
 
 - (void) movieSeekToSceneStart
@@ -271,7 +275,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     }
     @synchronized(self.scene)
     {
-        [self.scene addWithMocapURL:self.mocapURL error:nil];
+        BOOL success = [self.scene addWithMocapURL:[[self fileURL] URLByAppendingPathComponent:CLDPackageMocapFileName] error:nil];
+        if (!success) [self.scene addWithMocapURL:self.mocapURL error:nil];
+        
         [self movieSeekToSceneStart];
         [self toggleDataView:nil];
     }
@@ -287,7 +293,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     @synchronized(self.scene)
     {
-        [self.scene addWithDatasetURL:self.datasetURL error:nil];
+        BOOL success = [self.scene addWithDatasetURL:[[self fileURL] URLByAppendingPathComponent:CLDPackageDatasetPath] error:nil];
+        if (!success) [self.scene addWithDatasetURL:self.datasetURL error:nil];
+
         [self movieSeekToSceneStart];
         [self toggleDataView:nil];
     }
@@ -428,8 +436,8 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
 
 - (BOOL)writeToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
 {
-    NSURL *sceneURL = [absoluteURL URLByAppendingPathComponent:CLDSceneFileName];
-    NSURL *metadataURL = [absoluteURL URLByAppendingPathComponent:CLDMetadataFileName];
+    NSURL *sceneURL = [absoluteURL URLByAppendingPathComponent:CLDPackageSceneFileName];
+    NSURL *metadataURL = [absoluteURL URLByAppendingPathComponent:CLDPackageMetadataFileName];
     BOOL sceneSuccess, metadataSuccess;
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -488,7 +496,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
 {
-    NSURL *metadataURL = [absoluteURL URLByAppendingPathComponent:CLDMetadataFileName];
+    NSURL *metadataURL = [absoluteURL URLByAppendingPathComponent:CLDPackageMetadataFileName];
     BOOL metadataSuccess;
     
     NSDictionary *metadata = [NSDictionary dictionaryWithContentsOfURL:metadataURL];
