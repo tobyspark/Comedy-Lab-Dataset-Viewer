@@ -379,7 +379,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         {
             [child setHidden:!self.viewShoreHappiness];
         }
-        else if ([[child name] hasPrefix:@"Audience"])
+        else if ([[child name] hasPrefix:@"gaze"])
         {
             [child setHidden:!self.viewGaze];
         }
