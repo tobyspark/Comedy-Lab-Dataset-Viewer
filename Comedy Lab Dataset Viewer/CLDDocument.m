@@ -442,7 +442,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     while (povsCount < menuitemsCount)
     {
-        [viewMenu removeItemAtIndex:menuitemsCount];
+        [viewMenu removeItemAtIndex:menuitemsCount + startIndexForPovs - 1];
         menuitemsCount--;
     }
     
