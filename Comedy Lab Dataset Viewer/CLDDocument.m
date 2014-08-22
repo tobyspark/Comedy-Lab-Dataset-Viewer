@@ -337,13 +337,39 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
 
 - (IBAction) toggleAudienceMask:(id)sender
 {
+    // We move the audience camera a bit to get a better view when we're just looking at the 3D scene.
+    // Audience camera node is at x=0 (what are the chances).
+    // Should do this more elegantly, but hey. This app is tied to the dataset.
+    SCNNode *audienceCameraNode = [[self.scene rootNode] childNodeWithName:@"Camera-Audience" recursively:NO];
+    SCNVector3 position = [audienceCameraNode position];
+    
     if ([sender state] == NSOnState)
     {
         [self.playerMaskLayer setOpacity:0];
+        
+        [SCNTransaction begin];
+        [SCNTransaction setAnimationDuration:0.25];
+        
+        [audienceCameraNode setPosition:SCNVector3Make(0, position.y, position.z)];
+        
+        [SCNTransaction setCompletionBlock:^{
+            [SCNTransaction setAnimationDuration:0];
+        }];
+        [SCNTransaction commit];
     }
     else
     {
         [self.playerMaskLayer setOpacity:1];
+        
+        [SCNTransaction begin];
+        [SCNTransaction setAnimationDuration:1];
+        
+        [audienceCameraNode setPosition:SCNVector3Make(-1000, position.y, position.z)];
+    
+        [SCNTransaction setCompletionBlock:^{
+            [SCNTransaction setAnimationDuration:0];
+        }];
+        [SCNTransaction commit];
     }
 }
 
