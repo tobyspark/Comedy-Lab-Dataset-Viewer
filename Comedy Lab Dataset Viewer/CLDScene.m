@@ -438,11 +438,13 @@ static NSString * const laughStateL = @"Laughing";
         {
             SCNNode *subjectNode = [SCNNode node];
             [subjectNode setName:columnHeader];
-            
+        
+        #ifdef DEBUG
             SCNNode* subjectRotationNode = [SCNNode node];
             [subjectRotationNode setName:@"mocap"];
             [subjectRotationNode addChildNode:[SCNNode axes]];
             [subjectNode addChildNode:subjectRotationNode];
+        #endif
             
             SCNNode* subjectGazeNode = [SCNNode node];
             [subjectGazeNode setName:@"gaze"];
@@ -459,6 +461,7 @@ static NSString * const laughStateL = @"Laughing";
             positionAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
             [subjectNode addAnimation:positionAnimation forKey:@"fingers crossed for positions"];
             
+        #ifdef DEBUG
             CAKeyframeAnimation *mocapRotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
             mocapRotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
             mocapRotationAnimation.duration = finalTime;
@@ -468,6 +471,7 @@ static NSString * const laughStateL = @"Laughing";
             mocapRotationAnimation.values = subjectRotationArray[i];
             mocapRotationAnimation.usesSceneTimeBase = YES; // HACK: AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions).
             [subjectRotationNode addAnimation:mocapRotationAnimation forKey:@"fingers crossed for mocap rotations"];
+        #endif
             
             CAKeyframeAnimation *gazeRotationAnimation = [CAKeyframeAnimation animationWithKeyPath:@"rotation"];
             gazeRotationAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;

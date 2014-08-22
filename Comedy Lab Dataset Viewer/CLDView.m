@@ -14,6 +14,9 @@
 
 @implementation CLDView
 
+// Only have tweakage when running in debug mode (ie. direct from Xcode).
+#ifdef DEBUG
+
 #pragma mark Key handlers - Subject gaze
 
 -(IBAction)moveDown:(id)sender
@@ -364,5 +367,7 @@
     self.cameraNode.camera.xFov = (180.0*35.0) / (M_PI*focalLength);
     NSLog(@"Focal length: %f", focalLength);
 }
+
+#endif
 
 @end
