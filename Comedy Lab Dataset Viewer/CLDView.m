@@ -70,7 +70,11 @@
         {
             [subjectNodeDicts addObject:[@{@"node": node, @"zRot": @0, @"xRot": @0} mutableCopy]];
         }
-        [subjectNodeDicts addObject:[@{@"node": [[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO], @"zRot": @0, @"xRot": @0, @"yRot": @0} mutableCopy]];
+        SCNNode *performerNode = [[self.scene rootNode] childNodeWithName:@"Performer" recursively:NO];
+        if (performerNode)
+        {
+            [subjectNodeDicts addObject:[@{@"node": performerNode, @"zRot": @0, @"xRot": @0, @"yRot": @0} mutableCopy]];
+        }
         
         [self setSubjectNodes:[subjectNodeDicts copy]];
         [self setSubjectNode:self.subjectNodes[0][@"node"]];
