@@ -218,10 +218,20 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     NSLog(@"Loading movie: %@", url);
 
     AVPlayer *player = [AVPlayer playerWithURL:url];
+    __weak __typeof(AVPlayer) *weakPlayer = player;
     // AVSynchronizedLayer doesn't work properly with CAAnimation (SceneKit Additions), see early commits
     // So we use this instead, which also allows us to make freeScene a SCNView with it's built-in camera UI.
     [player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(0.1, 600) queue:NULL usingBlock:^(CMTime time) {
         NSTimeInterval timeSecs = CMTimeGetSeconds(time);
+        
+        if (self.loop)
+        {
+            if (timeSecs > [[self.scene attributeForKey:SCNSceneEndTimeAttributeKey] doubleValue])
+            {
+                timeSecs = [[self.scene attributeForKey:SCNSceneStartTimeAttributeKey] doubleValue];
+                [weakPlayer seekToTime:CMTimeMakeWithSeconds(timeSecs, 600)];
+            }
+        }
         
         timeSecs += self.freeSceneView.timeOffset;
         
@@ -421,6 +431,11 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     }];
 }
 
+- (IBAction) toggleLoop:(id)sender
+{
+    self.loop = !self.loop;
+}
+
 #pragma mark - NSMenuDelegate
 
 - (void)menuWillOpen:(NSMenu *)menu
@@ -429,6 +444,8 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     NSMenu *viewMenu = menu;
     
     [[viewMenu itemWithTitle:@"Hide audience"] setState:self.playerMaskLayer.opacity == 1.0 ? NSOnState : NSOffState];
+    
+    [[viewMenu itemWithTitle:@"Loop"] setState:self.loop];
     
     [[viewMenu itemWithTitle:@"Light state"] setState:self.viewLightState];
     [[viewMenu itemWithTitle:@"Laugh state"] setState:self.viewLaughState];

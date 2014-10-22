@@ -25,6 +25,7 @@
 @property bool viewBreathingBelt;
 @property bool viewShoreHappiness;
 @property bool viewGaze;
+@property bool loop;
 
 - (IBAction) chooseMovie:(id)sender;
 - (IBAction) chooseMocapData:(id)sender;
@@ -33,5 +34,6 @@
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender;
 - (IBAction) toggleAudienceMask:(id)sender;
 - (IBAction) toggleDataView:(id)sender;
+- (IBAction) toggleLoop:(id)sender;
 
 @end
