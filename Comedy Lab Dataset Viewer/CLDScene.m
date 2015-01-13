@@ -99,7 +99,7 @@ static NSString * const laughStateL = @"Laughing";
 
 @implementation SCNNode (ComedyLabAdditions)
 
-+ (SCNNode *) arrow
++ (instancetype) arrow
 {
     // TASK: Create an arrow 500mm long.
     
@@ -117,7 +117,7 @@ static NSString * const laughStateL = @"Laughing";
     return arrow;
 }
 
-+ (SCNNode *) axes
++ (instancetype) axes
 {
     SCNNode *axes = [SCNNode node];
     [axes setName:@"axes"];
@@ -986,6 +986,28 @@ static NSString * const laughStateL = @"Laughing";
     orthoCameraNode.camera.orthographicScale = scale;
     
     return [cameraPositions copy];
+}
+
+- (NSArray *)personNodes
+{
+    // This should be a property added to during import of mocap data, but I'd written this in the course of [SCNView setCameraWithPersonNode:] so here this is instead
+    
+    // Node structure of a person
+    // Performer / Audience_XX (position)
+    // -> gaze (rotation)
+    //    -> arrow
+    
+    return [self.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop)
+                    {
+                        if ([[child name] hasPrefix:@"Audience"] || [[child name] isEqual:@"Performer"])
+                        {
+                            if ([child childNodeWithName:@"gaze" recursively:NO])
+                            {
+                                return YES;
+                            }
+                        }
+                        return NO;
+                    }];
 }
 
 @end

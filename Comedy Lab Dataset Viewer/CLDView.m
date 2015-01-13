@@ -14,6 +14,32 @@
 
 @implementation CLDView
 
+- (void) setPovOrtho
+{
+    self.pointOfView = [self.scene.rootNode childNodeWithName:@"Camera-Orthographic" recursively:NO];
+}
+
+- (void) setPovWithPersonNode:(SCNNode *)person
+{
+    // Need to create a child of gaze node
+    // - rotated such that -z (viewing axis) aligns with gaze +y (see [SCNNode Arrow])
+    // - ~150mm below (hat peak -> eyelevel)
+    
+    SCNNode* camera = [person childNodeWithName:@"camera" recursively:YES];
+    if (!camera)
+    {
+        camera = [SCNNode node];
+        camera.name = @"camera";
+        camera.position = SCNVector3Make(0, 0, -150);
+        camera.rotation = SCNVector4Make(1, 0, 0, GLKMathDegreesToRadians(90));
+        camera.camera = [SCNCamera camera];
+        camera.camera.automaticallyAdjustsZRange = YES;
+        [[person childNodeWithName:@"gaze" recursively:NO] addChildNode:camera];
+    }
+    
+    self.pointOfView = camera;
+}
+
 // Only have tweakage when running in debug mode (ie. direct from Xcode).
 #ifdef DEBUG
 

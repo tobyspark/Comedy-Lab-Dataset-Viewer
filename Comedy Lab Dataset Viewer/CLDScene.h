@@ -11,6 +11,7 @@
 @interface SCNNode (ComedyLabAdditions)
 
 + (instancetype) arrow;
++ (instancetype) axes;
 
 @end
 
@@ -27,5 +28,7 @@
 - (NSData *)positionDataWithCameraNode:(SCNNode *)cameraNode;
 
 - (NSArray *)standardCameraPositions;
+
+- (NSArray *)personNodes;
 
 @end

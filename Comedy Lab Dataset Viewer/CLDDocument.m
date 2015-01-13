@@ -233,7 +233,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
             }
         }
         
+    #ifdef DEBUG
         timeSecs += self.freeSceneView.timeOffset;
+    #endif
         
         [self.audienceSceneLayer setCurrentTime:timeSecs];
         [self.performerSceneLayer setCurrentTime:timeSecs];
@@ -324,11 +326,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
 {
     // TASK: Recall previously captured point of view
     
-    NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
-    
-    NSUInteger startIndexForPovs = [viewMenu indexOfItemWithTitle:@"Add viewpoint"] + 1;
-    NSUInteger povIndexToRecall = [viewMenu indexOfItem:sender] - startIndexForPovs;
-    NSData *recalledPovData = [self.freeSceneViewPovs objectAtIndex:povIndexToRecall];
+    NSData *recalledPovData = [sender representedObject];
     
     // Use implicit animation as CABasicAnimation strangely won't work
     // But this requires setting duration back to zero for the freeView camera to work
@@ -339,10 +337,17 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     [SCNTransaction setCompletionBlock:^{
         [SCNTransaction setAnimationDuration:0];
     }];
-
+    
+    [self.freeSceneView setPovOrtho];
     [self.scene setCameraNodePosition:self.freeSceneView.pointOfView withData:recalledPovData];
     
     [SCNTransaction commit];
+}
+
+- (IBAction) freeSceneViewSetPovToFirstPerson:(id)sender
+{
+    NSLog(@"sender: %@", sender);
+    [self.freeSceneView setPovWithPersonNode:[sender representedObject]];
 }
 
 - (IBAction) toggleAudienceMask:(id)sender
@@ -452,8 +457,17 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     [[viewMenu itemWithTitle:@"Chest expansion"] setState:self.viewBreathingBelt];
     [[viewMenu itemWithTitle:@"SHORE happiness"] setState:self.viewShoreHappiness];
     [[viewMenu itemWithTitle:@"Gaze"] setState:self.viewGaze];
- 
-    NSUInteger startIndexForPovs = [[menu itemArray] indexOfObject:[menu itemWithTitle:@"Add viewpoint"]] + 1;
+    
+    NSMenu* firstPersonMenu = [[NSMenu alloc] initWithTitle:@""];
+    for (SCNNode* node in [self.scene personNodes])
+    {
+        NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:node.name action:@selector(freeSceneViewSetPovToFirstPerson:) keyEquivalent:@""];
+        [item setRepresentedObject:node];
+        [firstPersonMenu addItem:item];
+    }
+    [viewMenu setSubmenu:firstPersonMenu forItem:[menu itemWithTitle:@"Perspective"]];
+    
+    NSUInteger startIndexForPovs = [[menu itemArray] indexOfObject:[menu itemWithTitle:@"Add ortho"]] + 1;
     NSUInteger povsCount = [self.freeSceneViewPovs count];
     NSUInteger menuitemsCount = [[viewMenu itemArray] count] - startIndexForPovs;
     
@@ -469,6 +483,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         NSString *povKey = [NSString stringWithFormat:@"%lu", (unsigned long)menuitemsCount + 1];
         
         NSMenuItem *newPovMenuItem = [[NSMenuItem alloc] initWithTitle:povString action:@selector(freeSceneViewSetCurrentPov:) keyEquivalent:povKey];
+        [newPovMenuItem setRepresentedObject:self.freeSceneViewPovs[menuitemsCount]];
         
         [viewMenu addItem:newPovMenuItem];
         menuitemsCount++;

@@ -10,8 +10,15 @@
 #import <SceneKit/SceneKit.h>
 
 @interface CLDView : SCNView
+
+- (void) setPovOrtho;
+- (void) setPovWithPersonNode:(SCNNode *)person;
+
+#ifdef DEBUG
 @property (weak) SCNNode *cameraNode;
 @property (weak) SCNNode *subjectNode;
 @property (strong) NSArray *subjectNodes;
 @property NSTimeInterval timeOffset;
+#endif
+
 @end
