@@ -38,6 +38,22 @@
     }
     
     self.pointOfView = camera;
+    
+    #ifdef DEBUG
+    SCNNode* test = [[self.scene rootNode] childNodeWithName:@"gazeAsCylinder" recursively:YES];
+    if (test)
+    {
+        [test removeFromParentNode];
+    }
+    else
+    {
+        test = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:700 height:6000]];
+        [test setName:@"gazeAsCylinder"];
+        [test setPosition:SCNVector3Make(0, 3000, 0)];
+    }
+    
+    [[person childNodeWithName:@"gaze" recursively:NO] addChildNode:test];
+    #endif
 }
 
 // Only have tweakage when running in debug mode (ie. direct from Xcode).
