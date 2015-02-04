@@ -70,12 +70,16 @@ static NSString * const laughStateI = @"Indeterminate";
 static NSString * const laughStateN = @"Not Laughing";
 static NSString * const laughStateS = @"Smiling";
 static NSString * const laughStateL = @"Laughing";
+static NSString * const isBeingLookedAtNPG = @"NPG";
+static NSString * const isBeingLookedAtIPG = @"IPG";
+static NSString * const isBeingLookedAtRPG = @"RPG";
 
 @interface NSString (ComedyLabAdditions)
 
 -(NSNumber*) isLaughStateNotN;
 -(NSNumber*) isLaughStateNotS;
 -(NSNumber*) isLaughStateNotL;
+-(NSNumber*) isBeingLookedAtIsNPG;
 
 @end
 
@@ -93,6 +97,11 @@ static NSString * const laughStateL = @"Laughing";
 -(NSNumber*) isLaughStateNotL
 {
     return @(self != laughStateL);
+}
+
+-(NSNumber*) isBeingLookedAtIsNPG
+{
+    return @(self == isBeingLookedAtNPG);
 }
 
 @end
@@ -630,53 +639,9 @@ static NSString * const laughStateL = @"Laughing";
     
     NSDictionary* (^subjectDataWithName)(NSString*) = ^NSDictionary*(NSString* name)
     {
-        // Find mocap and seat nodes
-        
-        NSString *nameNumber = [name componentsSeparatedByString:@" "][1];
-        SCNNode *seatNode = nil;
-        SCNNode *mocapNode = nil;
-        
-        NSArray *audienceNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
-            return [[child name] hasPrefix:@"Audience"];
-        }];
-        for (SCNNode *node in audienceNodes)
-        {
-            NSString *audienceNameNumber = [[node name] componentsSeparatedByString:@"_"][1];
-            if ([nameNumber isEqualToString:audienceNameNumber])
-            {
-                mocapNode = node;
-                continue;
-            }
-        }
-        
-        NSArray *seatNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
-            return [[child name] hasPrefix:@"Seat"];
-        }];
-        for (SCNNode *node in seatNodes)
-        {
-            NSString *seatNameNumber = [[node name] componentsSeparatedByString:@" "][1];
-            if ([nameNumber isEqualToString:seatNameNumber])
-            {
-                seatNode = node;
-                continue;
-            }
-        }
-        
-        // Sanity checks
-        if (!seatNode)
-        {
-            NSLog(@"Seat node not found for %@, aborting", name);
-            return nil;
-        }
-        if (!mocapNode)
-        {
-            NSLog(@"Mocap node not found for %@, using seat node instead", name);
-            mocapNode = seatNode;
-        }
-        
-        // Create and pre-populate data dict
-        
         NSMutableDictionary *subjectData = [NSMutableDictionary dictionaryWithCapacity:10];
+        
+        // Pre-populate data dict
         
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"lightState"];
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"breathingBelt"];
@@ -692,16 +657,58 @@ static NSString * const laughStateL = @"Laughing";
         }
         
         [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"laughState"];
-        NSMutableArray *array = [subjectData objectForKey:@"laughState"];
-        for (NSUInteger i = 0; i < timeStampCount; ++i)
         {
-            [array addObject:laughStateI];
+            NSMutableArray *array = [subjectData objectForKey:@"laughState"];
+            for (NSUInteger i = 0; i < timeStampCount; ++i)
+            {
+                [array addObject:laughStateI];
+            }
         }
+        
+        [subjectData setObject:[NSMutableArray arrayWithCapacity:timeStampCount] forKey:@"isBeingLookedAt"];
+        {
+            NSMutableArray *array = [subjectData objectForKey:@"isBeingLookedAt"];
+            for (NSUInteger i = 0; i < timeStampCount; ++i)
+            {
+                [array addObject:isBeingLookedAtNPG];
+            }
+        }
+        
+        // Find mocap and seat nodes
+        
+        NSString* subjectNodeName = [name stringByReplacingOccurrencesOfString:@"Audience " withString:@"Audience_"];
+        NSString* seatNodeName = [name stringByReplacingOccurrencesOfString:@"Audience " withString:@"Seat "];;
+        
+        NSArray *subjectNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+            return [[child name] isEqualToString:subjectNodeName] && [[child childNodes] count] > 0;
+        }];
+        
+        
+        NSArray *seatNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+            return [[child name] isEqualToString:seatNodeName];
+        }];
         
         // Add in associated nodes
         
-        [subjectData setObject:seatNode forKey:@"seatNode"];
-        [subjectData setObject:mocapNode forKey:@"subjectNode"];
+        if ([seatNodes count] == 1)
+        {
+            [subjectData setObject:seatNodes[0] forKey:@"seatNode"];
+        }
+        else
+        {
+            NSLog(@"%lu Seat node(s) found for %@, aborting", [seatNodes count], name);
+            return nil;
+        }
+        
+        if ([subjectNodes count] == 1)
+        {
+            [subjectData setObject:subjectNodes[0] forKey:@"subjectNode"];
+        }
+        else
+        {
+            NSLog(@"%lu Mocap node(s) found for %@, using seat node instead", [subjectNodes count], name);
+            [subjectData setObject:seatNodes[0] forKey:@"subjectNode"];
+        }
         
         return subjectData;
     };
@@ -778,6 +785,18 @@ static NSString * const laughStateL = @"Laughing";
             {
                 CGFloat entry = [entryString doubleValue];
                 NSValue *value = [NSValue valueWithSCNVector3:SCNVector3Make(1, 1, entry*kCLDHappinessMultiplier)];
+                [array replaceObjectAtIndex:timeIndex withObject:value];
+            }
+        }
+        
+        // isBeingLookedAtByPerformer, #14
+        {
+            NSString* value;
+            if ([entries[14] isEqualToString:isBeingLookedAtIPG]) value = isBeingLookedAtIPG;
+            else if ([entries[14] isEqualToString:isBeingLookedAtRPG]) value = isBeingLookedAtRPG;
+            if (value)
+            {
+                NSMutableArray *array = [subjectData objectForKey:@"isBeingLookedAt"];
                 [array replaceObjectAtIndex:timeIndex withObject:value];
             }
         }
@@ -913,6 +932,24 @@ static NSString * const laughStateL = @"Laughing";
             [node setPivot:CATransform3DMakeTranslation(0, 0, -0.5)];
             [node addAnimation:animation forKey:@"fingers crossed for happiness"];
             [[subjectData objectForKey:@"seatNode"] addChildNode:node];
+        }
+        
+        // isBeingLookedAt
+        {
+            NSArray *array = [subjectData objectForKey:@"isBeingLookedAt"];
+            
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = endTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = [array valueForKey:@"isBeingLookedAtIsNPG"];
+            animation.usesSceneTimeBase = YES;
+            
+            SCNNode *node = [SCNNode nodeWithGeometry:[SCNSphere sphereWithRadius:50]];
+            [node addAnimation:animation forKey:@"fingers crossed for isBeingLookedAt"];
+            [[[subjectData objectForKey:@"subjectNode"] childNodeWithName:@"gaze" recursively:NO] addChildNode:node];
         }
     }
 
