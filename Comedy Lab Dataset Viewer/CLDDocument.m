@@ -77,7 +77,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     [aController.window.contentView setWantsLayer:YES];
     
-    [self setSuperLayer:[aController.window.contentView layer]];
+    [self setSuperLayer:[(NSView*)aController.window.contentView layer]];
     
     // Set delegate so we can handle laying out sublayers, and do the views while we're at it
     [self.superLayer setDelegate:self];
