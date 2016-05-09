@@ -1083,6 +1083,64 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
         }
     }
     
+    // Get nodes to draw between, in order of data file.
+    NSMutableArray* subjectNodes = [NSMutableArray arrayWithCapacity:subjects];
+    for (NSUInteger i = 0; i < subjects; i++)
+    {
+        NSString *name = headerItems[1 + i*subjects];
+        name = [name componentsSeparatedByString:@"_at_"][0];
+        name = [name componentsSeparatedByString:@"_Hat"][0];
+        
+        if ([name isEqual:@"Performer"])
+        {
+            SCNNode* performerSeat = [SCNNode node];
+            [performerSeat setName:@"Performer Seat"];
+            [self.rootNode addChildNode:performerSeat];
+            
+            subjectNodes[i] = performerSeat;
+        }
+        else
+        {
+            NSString* subjectNodeName = [name stringByReplacingOccurrencesOfString:@"Audience_" withString:@"Seat "];
+            NSArray *candidateNodes = [[self rootNode] childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
+                return [[child name] isEqualToString:subjectNodeName] && [[child childNodes] count] > 0;
+            }];
+            subjectNodes[i] = candidateNodes[0];
+        }
+    }
+    
+    // Create arrows between subjects
+    for (NSUInteger from = 0; from < subjects; from++)
+    {
+        for (NSUInteger to = 0; to < subjects; to++)
+        {
+            if (from == to)
+            {
+                continue;
+            }
+            
+            SCNNode* lookingAtNode = [SCNNode node];
+            SCNNode* arrowNode = [SCNNode node];
+            
+            SCNNode* arrow = [SCNNode arrow];
+            [arrow setScale:SCNVector3Make(0.5, 0.5, 0.5)];
+            
+            [lookingAtNode addChildNode:arrowNode];
+            [arrowNode addChildNode:arrow];
+            
+            // Attach to from-subject node, which will position one end
+            [subjectNodes[from] addChildNode:lookingAtNode];
+            
+            SCNVector3 to_pos = [lookingAtNode convertPosition:SCNVector3Make(0,0,0) fromNode:subjectNodes[to]];
+
+            // Position tip at to-subject
+            vec3 to_pos_v3 = {to_pos.x, to_pos.y, to_pos.z};
+            float distance = vec3_len(to_pos_v3);
+            lookingAtNode.rotation = rotateArrowToVec(to_pos.x, to_pos.y, to_pos.z);
+            arrowNode.position = SCNVector3Make(0, distance - 500/2 - 100, 0);
+        }
+    }
+    
     return YES;
 }
 
