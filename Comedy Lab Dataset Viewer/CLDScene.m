@@ -79,7 +79,6 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
 -(NSNumber*) isLaughStateNotN;
 -(NSNumber*) isLaughStateNotS;
 -(NSNumber*) isLaughStateNotL;
--(NSNumber*) isBeingLookedAtIsNPG;
 
 @end
 
@@ -97,11 +96,6 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
 -(NSNumber*) isLaughStateNotL
 {
     return @(self != laughStateL);
-}
-
--(NSNumber*) isBeingLookedAtIsNPG
-{
-    return @(self == isBeingLookedAtNPG);
 }
 
 @end
@@ -600,7 +594,7 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
     
     // Start scan proper
     
-    NSArray *headerExpectedItems = @[@"AudienceID", @"TimeStamp", @"Light State While", @"Laugh State", @"Breathing Belt", @"Happy", @"Sad", @"Surprised", @"Angry", @"MouthOpen", @"Distance from Performer", @"Angle from Performer", @"Movement", @"isLookingAt", @"isBeingLookedAtByPerformer", @"isBeingLookedAtByAudienceMember"];
+    NSArray *headerExpectedItems = @[@"AudienceID", @"TimeStamp", @"Light State While", @"Laugh State", @"Breathing Belt", @"Happy", @"Sad", @"Surprised", @"Angry", @"MouthOpen", @"Distance from Performer", @"Angle from Performer", @"Movement", @"isLookingAtPerformer", @"isLookingAtAudience", @"isBeingLookedAtByPerformer", @"isBeingLookedAtByAudienceMember", @"isLookingAtVPScreen"];
     
     // Parse header row
     NSString *header = nil;
@@ -610,10 +604,15 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
     
     if (![headerItems isEqual:headerExpectedItems])
     {
-        NSLog(@"Headers not as expected");
-        NSLog(@"Expected: %@", headerExpectedItems);
-        NSLog(@"Found: %@", headerItems);
-        return NO;
+        // Remove VPScreen measure and re-compare
+        headerExpectedItems = [headerExpectedItems subarrayWithRange:NSMakeRange(0, [headerExpectedItems count]-1)];
+        if (![headerItems isEqual:headerExpectedItems])
+        {
+            NSLog(@"Headers not as expected");
+            NSLog(@"Expected: %@", headerExpectedItems);
+            NSLog(@"Found: %@", headerItems);
+            return NO;
+        }
     }
     
     // TASK: Parse data
@@ -789,14 +788,13 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
             }
         }
         
-        // isBeingLookedAtByPerformer, #14
+        // isBeingLookedAtByPerformer, #15
         {
-            NSString* value;
-            if ([entries[14] isEqualToString:isBeingLookedAtIPG]) value = isBeingLookedAtIPG;
-            else if ([entries[14] isEqualToString:isBeingLookedAtRPG]) value = isBeingLookedAtRPG;
-            if (value)
+            NSMutableArray *array = [subjectData objectForKey:@"isBeingLookedAt"];
+            NSString *entryString = entries[15];
+            if (![entryString isEqualToString:@"n/a"])
             {
-                NSMutableArray *array = [subjectData objectForKey:@"isBeingLookedAt"];
+                NSNumber* value = [NSNumber numberWithBool:![entryString boolValue]]; // Controls 'hidden' not 'visible'!
                 [array replaceObjectAtIndex:timeIndex withObject:value];
             }
         }
@@ -944,7 +942,7 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
             animation.removedOnCompletion = NO;
             animation.keyTimes = timeArray;
             animation.calculationMode = kCAAnimationDiscrete;
-            animation.values = [array valueForKey:@"isBeingLookedAtIsNPG"];
+            animation.values = array;
             animation.usesSceneTimeBase = YES;
             
             SCNNode *node = [SCNNode nodeWithGeometry:[SCNSphere sphereWithRadius:50]];
