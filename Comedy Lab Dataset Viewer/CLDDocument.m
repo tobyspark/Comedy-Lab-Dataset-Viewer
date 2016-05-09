@@ -11,6 +11,7 @@
 static NSString * const CLDPackageMovieFileName = @"movie";
 static NSString * const CLDPackageMocapFileName = @"mocap.csv";
 static NSString * const CLDPackageDatasetPath = @"dataset.csv";
+static NSString * const CLDPackageLookingAtFileName = @"lookingAt.csv";
 static NSString * const CLDPackageSceneFileName = @"Scene.dae";
 static NSString * const CLDPackageMetadataFileName = @"Metadata.plist";
 static NSString * const CLDMetadataKeyMoviePath = @"moviePath";
@@ -193,6 +194,21 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     }];
 }
 
+- (IBAction) chooseLookingAtData:(id)sender
+{
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setTitle:@"Select LookingAt Data CSV"];
+    [openPanel setAllowedFileTypes:@[@"public.comma-separated-values-text"]];
+    [openPanel setAllowsMultipleSelection:NO];
+    
+    NSWindowController* wc = self.windowControllers[0];
+    
+    [openPanel beginSheetModalForWindow:wc.window completionHandler:^(NSInteger result) {
+        self.lookingAtURL = [openPanel URLs][0];
+        [self loadLookingAt];
+    }];
+}
+
 - (void) loadMovie
 {
     if (!self.playerView)
@@ -308,6 +324,24 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         BOOL success = [self.scene addWithDatasetURL:[[self fileURL] URLByAppendingPathComponent:CLDPackageDatasetPath] error:nil];
         if (!success) [self.scene addWithDatasetURL:self.datasetURL error:nil];
 
+        [self movieSeekToSceneStart];
+        [self toggleDataView:nil];
+    }
+}
+
+- (void) loadLookingAt
+{
+    if (!self.scene)
+    {
+        NSLog(@"Cannot load lookingAt data if scene not initialised");
+        return;
+    }
+    
+    @synchronized(self.scene)
+    {
+        BOOL success = [self.scene addWithLookingAtURL:[[self fileURL] URLByAppendingPathComponent:CLDPackageLookingAtFileName] error:nil];
+        if (!success) [self.scene addWithLookingAtURL:self.lookingAtURL error:nil];
+        
         [self movieSeekToSceneStart];
         [self toggleDataView:nil];
     }

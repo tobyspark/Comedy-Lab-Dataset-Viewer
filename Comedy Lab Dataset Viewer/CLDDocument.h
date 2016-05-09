@@ -18,6 +18,7 @@
 @property (strong) NSURL *movieURL;
 @property (strong) NSURL *mocapURL;
 @property (strong) NSURL *datasetURL;
+@property (strong) NSURL *lookingAtURL;
 @property float movieVolume;
 @property bool movieMuted;
 @property bool viewLightState;
@@ -30,6 +31,7 @@
 - (IBAction) chooseMovie:(id)sender;
 - (IBAction) chooseMocapData:(id)sender;
 - (IBAction) chooseAnalysisDataset:(id)sender;
+- (IBAction) chooseLookingAtData:(id)sender;
 - (IBAction) freeSceneViewAddCurrentPov:(id)sender;
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender;
 - (IBAction) freeSceneViewSetPovToFirstPerson:(id)sender;

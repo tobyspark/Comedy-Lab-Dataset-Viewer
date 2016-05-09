@@ -954,6 +954,138 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
     return YES;
 }
 
+- (BOOL)addWithLookingAtURL:(NSURL *)url error:(NSError **)error
+{
+    NSString *fileString = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:error];
+    
+    if (!fileString)
+    {
+        NSLog(@"Abort import - Dataset URL: %@", url);
+        return NO;
+    }
+    
+    // TASK: Parse 'Looking At' CSV file exported from ComedyLab Vicon Exporter
+    // Exporter:
+    // Dataset file:
+    
+    // CSV header format is 'Time' then 'subject_at_subject' for all subjects at all subjects
+    
+    NSScanner *scanner = [NSScanner scannerWithString:fileString];
+    
+    // Count number of lines
+    // https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/TextLayout/Tasks/CountLines.html
+    NSUInteger numberOfLines, index, lastIndex = 0, stringLength = [fileString length];
+    for (index = 0, numberOfLines = 0; index < stringLength; numberOfLines++)
+    {
+        lastIndex = index;
+        index = NSMaxRange([fileString lineRangeForRange:NSMakeRange(index, 0)]);
+    }
+    
+    // Find final time entry
+    NSString *finalTimeString = nil;
+    [scanner setScanLocation:lastIndex];
+    [scanner scanUpToString:@"," intoString:&finalTimeString];
+    CGFloat finalTime = [finalTimeString doubleValue];
+    
+    // Parse header row
+    NSString *header = nil;
+    [scanner setScanLocation:0];
+    [scanner scanUpToCharactersFromSet:[NSCharacterSet newlineCharacterSet] intoString:&header];
+    
+    NSArray *headerItems = [header componentsSeparatedByString:@","];
+    
+    if (![headerItems[0] isEqualToString:@"Time"])
+    {
+        NSLog(@"First header column not 'Time', aborting");
+        return NO;
+    }
+    
+    NSUInteger dataColumns = [headerItems count] - 1;
+    NSUInteger subjects = sqrt(dataColumns);
+    NSLog(@"Check double math: data cols %lu, computed subjects %lu", dataColumns, subjects);
+    
+    // TASK: Parse data
+    
+    // CSV data has no spaces, no missing values.
+    
+    // Create arrays to hold values over time for all subjects
+    
+    NSMutableArray *timeArray = [NSMutableArray arrayWithCapacity:numberOfLines];
+    NSMutableArray *subjectArray = [NSMutableArray arrayWithCapacity:subjects];
+    for (NSUInteger i = 0; i < subjects; i++)
+    {
+        subjectArray[i] = [NSMutableArray arrayWithCapacity:numberOfLines];
+    }
+    
+    CGFloat startTime = 0.0;
+    
+    // Setup scanner
+    
+    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@","];
+    [characterSet formUnionWithCharacterSet:[NSCharacterSet newlineCharacterSet]];
+    
+    [scanner setCharactersToBeSkipped:characterSet];
+    
+    // Scan through data
+    
+    BOOL newline = true;
+    float time;
+    int datum;
+    NSMutableArray* data = [NSMutableArray arrayWithCapacity:subjects];
+    NSUInteger i = 0;
+    NSUInteger subject = 0;
+    NSUInteger dataColumn = 0;
+    
+    while (YES)
+    {
+        if (newline)
+        {
+            if ([scanner scanFloat:&time])
+            {
+                NSLog(@"Time: %f / %f", time, time / finalTime);
+                timeArray[i] = @(time / finalTime);
+                newline = NO;
+                
+                if (i == 0)
+                {
+                    startTime = time;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        else
+        {
+            [scanner scanInt:&datum];
+
+            data[dataColumn] = [NSNumber numberWithInt:datum]; // It's a bool really
+            
+            dataColumn++;
+            
+            // Move onto next subject
+            if (dataColumn >= kCLDdatumPerSubject)
+            {
+                subjectArray[subject][i] = [data copy];
+                
+                dataColumn = 0;
+                subject++;
+            }
+            
+            // Move onto next time
+            if (subject >= subjects)
+            {
+                newline = YES;
+                subject = 0;
+                i++;
+            }
+        }
+    }
+    
+    return YES;
+}
+
 - (void) setCameraNodePosition:(SCNNode *)cameraNode withData:(NSData *)data
 {
     CATransform3D recalledTransform;
