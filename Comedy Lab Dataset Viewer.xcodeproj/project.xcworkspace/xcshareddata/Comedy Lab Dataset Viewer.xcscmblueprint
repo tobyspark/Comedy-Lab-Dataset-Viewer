@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "767BCD62E905509F4309A51FE2F304D7B070190E",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "767BCD62E905509F4309A51FE2F304D7B070190E" : 0,
+    "9BBA0E83-65BF-499C-B3FA-30F8DCC19D90" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "ACDA7CF6-30B5-4B73-94B8-41E1586372AA",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "767BCD62E905509F4309A51FE2F304D7B070190E" : "Comedy%20Lab%20Dataset%20Viewer",
+    "9BBA0E83-65BF-499C-B3FA-30F8DCC19D90" : "Comedy Lab Dataset Viewer"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Comedy Lab Dataset Viewer",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Comedy Lab Dataset Viewer.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/tobyspark\/Comedy-Lab-Dataset-Viewer.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "767BCD62E905509F4309A51FE2F304D7B070190E"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/tobyspark\/Comedy-Lab-Dataset-Viewer.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "9BBA0E83-65BF-499C-B3FA-30F8DCC19D90"
+    }
+  ]
+}
