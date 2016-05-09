@@ -1012,9 +1012,13 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
     
     NSMutableArray *timeArray = [NSMutableArray arrayWithCapacity:numberOfLines];
     NSMutableArray *subjectArray = [NSMutableArray arrayWithCapacity:subjects];
-    for (NSUInteger i = 0; i < subjects; i++)
+    for (NSUInteger from = 0; from < subjects; from++)
     {
-        subjectArray[i] = [NSMutableArray arrayWithCapacity:numberOfLines];
+        subjectArray[from] = [NSMutableArray arrayWithCapacity:subjects];
+        for (NSUInteger to = 0; to < subjects; to++)
+        {
+            subjectArray[from][to] = [NSMutableArray arrayWithCapacity:numberOfLines];
+        }
     }
     
     CGFloat startTime = 0.0;
@@ -1031,10 +1035,9 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
     BOOL newline = true;
     float time;
     int datum;
-    NSMutableArray* data = [NSMutableArray arrayWithCapacity:subjects];
     NSUInteger i = 0;
-    NSUInteger subject = 0;
-    NSUInteger dataColumn = 0;
+    NSUInteger from = 0;
+    NSUInteger to = 0;
     
     while (YES)
     {
@@ -1059,25 +1062,24 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
         else
         {
             [scanner scanInt:&datum];
-
-            data[dataColumn] = [NSNumber numberWithInt:datum]; // It's a bool really
             
-            dataColumn++;
+            BOOL visible = datum;
+            subjectArray[from][to][i] = [NSNumber numberWithBool:!visible]; // Animating the hidden property
+
+            to++;
             
             // Move onto next subject
-            if (dataColumn >= kCLDdatumPerSubject)
+            if (to >= kCLDdatumPerSubject)
             {
-                subjectArray[subject][i] = [data copy];
-                
-                dataColumn = 0;
-                subject++;
+                to = 0;
+                from++;
             }
             
             // Move onto next time
-            if (subject >= subjects)
+            if (from >= subjects)
             {
                 newline = YES;
-                subject = 0;
+                from = 0;
                 i++;
             }
         }
@@ -1119,6 +1121,7 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
                 continue;
             }
             
+            // Create node/geometry structure
             SCNNode* lookingAtNode = [SCNNode node];
             SCNNode* arrowNode = [SCNNode node];
             
@@ -1128,16 +1131,26 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
             [lookingAtNode addChildNode:arrowNode];
             [arrowNode addChildNode:arrow];
             
-            // Attach to from-subject node, which will position one end
+            // Add to graph
             [subjectNodes[from] addChildNode:lookingAtNode];
-            
-            SCNVector3 to_pos = [lookingAtNode convertPosition:SCNVector3Make(0,0,0) fromNode:subjectNodes[to]];
 
             // Position tip at to-subject
+            SCNVector3 to_pos = [lookingAtNode convertPosition:SCNVector3Make(0,0,0) fromNode:subjectNodes[to]];
             vec3 to_pos_v3 = {to_pos.x, to_pos.y, to_pos.z};
             float distance = vec3_len(to_pos_v3);
             lookingAtNode.rotation = rotateArrowToVec(to_pos.x, to_pos.y, to_pos.z);
             arrowNode.position = SCNVector3Make(0, distance - 500/2 - 100, 0);
+            
+            // Animate
+            CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+            animation.duration = finalTime;
+            animation.removedOnCompletion = NO;
+            animation.keyTimes = timeArray;
+            animation.calculationMode = kCAAnimationDiscrete;
+            animation.values = subjectArray[from][to];
+            animation.usesSceneTimeBase = YES;
+            [lookingAtNode addAnimation:animation forKey:@"fingers crossed for lookingAt"];
         }
     }
     
