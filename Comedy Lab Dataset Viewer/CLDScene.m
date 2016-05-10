@@ -1121,25 +1121,34 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
                 continue;
             }
             
+            CGFloat offset = 100;
+            CGFloat scale = 0.5;
+            
             // Create node/geometry structure
             SCNNode* lookingAtNode = [SCNNode node];
             SCNNode* arrowNode = [SCNNode node];
-            
-            SCNNode* arrow = [SCNNode arrow];
-            [arrow setScale:SCNVector3Make(0.5, 0.5, 0.5)];
-            
             [lookingAtNode addChildNode:arrowNode];
-            [arrowNode addChildNode:arrow];
-            
-            // Add to graph
             [subjectNodes[from] addChildNode:lookingAtNode];
 
-            // Position tip at to-subject
+            SCNNode *cylinder = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:20 height:1]];
+            [arrowNode addChildNode:cylinder];
+            
+            SCNNode *cone = [SCNNode nodeWithGeometry:[SCNCone coneWithTopRadius:0 bottomRadius:40 height:80]];
+            [cone setPosition:SCNVector3Make(0, 460, 0)];
+            [arrowNode addChildNode:cone];
+
+            // Align with to-subject
             SCNVector3 to_pos = [lookingAtNode convertPosition:SCNVector3Make(0,0,0) fromNode:subjectNodes[to]];
             vec3 to_pos_v3 = {to_pos.x, to_pos.y, to_pos.z};
             float distance = vec3_len(to_pos_v3);
             lookingAtNode.rotation = rotateArrowToVec(to_pos.x, to_pos.y, to_pos.z);
-            arrowNode.position = SCNVector3Make(0, distance - 500/2 - 100, 0);
+            
+            // Draw arrow from half-way to to-subject
+            CGFloat cylinderLength = distance/2 - offset*2 - 80;
+            cylinder.scale = SCNVector3Make(scale, cylinderLength, scale);
+            cylinder.position = SCNVector3Make(0, distance/2 + offset + cylinderLength*1/2, 0);
+            cone.scale = SCNVector3Make(scale, scale, scale);
+            cone.position = SCNVector3Make(0, distance/2 + offset + cylinderLength + 40/2, 0);
             
             // Animate
             CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"hidden"];
