@@ -1126,6 +1126,7 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
             
             // Create node/geometry structure
             SCNNode* lookingAtNode = [SCNNode node];
+            lookingAtNode.name = @"lookingAt";
             SCNNode* arrowNode = [SCNNode node];
             [lookingAtNode addChildNode:arrowNode];
             [subjectNodes[from] addChildNode:lookingAtNode];
@@ -1159,7 +1160,7 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
             animation.calculationMode = kCAAnimationDiscrete;
             animation.values = subjectArray[from][to];
             animation.usesSceneTimeBase = YES;
-            [lookingAtNode addAnimation:animation forKey:@"fingers crossed for lookingAt"];
+            [arrowNode addAnimation:animation forKey:@"fingers crossed for lookingAt"];
         }
     }
     

@@ -191,6 +191,12 @@
                                     <action selector="toggleDataView:" target="-1" id="VVn-C5-Em1"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Oriented-to" id="1nu-Um-J9d">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleDataView:" target="-1" id="kC1-Lx-ggF"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="c8Y-3X-aVf"/>
                             <menuItem title="Perspective" id="upr-mp-jeM">
                                 <modifierMask key="keyEquivalentModifierMask"/>

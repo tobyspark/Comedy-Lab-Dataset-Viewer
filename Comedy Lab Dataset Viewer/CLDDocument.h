@@ -26,6 +26,7 @@
 @property bool viewBreathingBelt;
 @property bool viewShoreHappiness;
 @property bool viewGaze;
+@property bool viewLookingAt;
 @property bool loop;
 
 - (IBAction) chooseMovie:(id)sender;

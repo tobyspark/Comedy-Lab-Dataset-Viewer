@@ -17,6 +17,7 @@ static NSString * const CLDPackageMetadataFileName = @"Metadata.plist";
 static NSString * const CLDMetadataKeyMoviePath = @"moviePath";
 static NSString * const CLDMetadataKeyMocapPath = @"mocapPath";
 static NSString * const CLDMetadataKeyDatasetPath = @"datasetPath";
+static NSString * const CLDMetadataKeyLookingAtPath = @"lookingAtPath";
 static NSString * const CLDMetadataKeyViewPovs = @"freeViewPOVs";
 static NSString * const CLDMetadataKeyVolume = @"volume";
 static NSString * const CLDMetadataKeyMuted = @"muted";
@@ -25,6 +26,7 @@ static NSString * const CLDMetadataKeyViewLaughState = @"laughState";
 static NSString * const CLDMetadataKeyViewBreathingBelt = @"breathingBelt";
 static NSString * const CLDMetadataKeyViewShoreHappiness = @"happiness";
 static NSString * const CLDMetadataKeyViewGaze = @"gaze";
+static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
 
 @interface CLDDocument ()
 
@@ -58,6 +60,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         _viewBreathingBelt = YES;
         _viewShoreHappiness = YES;
         _viewGaze = YES;
+        _viewLookingAt = YES;
     }
     return self;
 }
@@ -143,6 +146,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     [self performSelectorInBackground:@selector(loadMocap) withObject:nil];
     [self performSelectorInBackground:@selector(loadDataset) withObject:nil];
+    [self performSelectorInBackground:@selector(loadLookingAt) withObject:nil];
     
     [self loadMovie];
     
@@ -444,6 +448,10 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     {
         self.viewGaze = !self.viewGaze;
     }
+    else if ([[sender title] isEqualToString:@"Oriented-to"])
+    {
+        self.viewLookingAt = !self.viewLookingAt;
+    }
     
     [self.scene.rootNode childNodesPassingTest:^BOOL(SCNNode *child, BOOL *stop) {
         if ([[child name] hasPrefix:@"lightState"])
@@ -465,6 +473,10 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         else if ([[child name] hasPrefix:@"gaze"])
         {
             [child setHidden:!self.viewGaze];
+        }
+        else if ([[child name] hasPrefix:@"lookingAt"])
+        {
+            [child setHidden:!self.viewLookingAt];
         }
         return NO;
     }];
@@ -491,6 +503,7 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     [[viewMenu itemWithTitle:@"Chest expansion"] setState:self.viewBreathingBelt];
     [[viewMenu itemWithTitle:@"SHORE happiness"] setState:self.viewShoreHappiness];
     [[viewMenu itemWithTitle:@"Gaze"] setState:self.viewGaze];
+    [[viewMenu itemWithTitle:@"Oriented-to"] setState:self.viewLookingAt];
     
     NSMenu* firstPersonMenu = [[NSMenu alloc] initWithTitle:@""];
     for (SCNNode* node in [self.scene personNodes])
@@ -547,6 +560,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     NSString *datasetPath = [self.datasetURL path];
     if (datasetPath) [metadata setObject:datasetPath forKey:CLDMetadataKeyDatasetPath];
+
+    NSString *lookingAtPath = [self.lookingAtURL path];
+    if (lookingAtPath) [metadata setObject:lookingAtPath forKey:CLDMetadataKeyLookingAtPath];
     
     NSNumber *movieVolume = [NSNumber numberWithFloat:[self.player volume]];
     [metadata setObject:movieVolume forKey:CLDMetadataKeyVolume];
@@ -570,6 +586,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
     
     NSNumber *viewGaze = [NSNumber numberWithBool:self.viewGaze];
     [metadata setObject:viewGaze forKey:CLDMetadataKeyViewGaze];
+
+    NSNumber *viewLookingAt = [NSNumber numberWithBool:self.viewLookingAt];
+    [metadata setObject:viewLookingAt forKey:CLDMetadataKeyViewLookingAt];
     
     metadataSuccess = [metadata writeToURL:metadataURL atomically:YES];
     
@@ -609,6 +628,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         
         NSString *datasetPath = [metadata objectForKey:CLDMetadataKeyDatasetPath];
         if (datasetPath) self.datasetURL = [NSURL fileURLWithPath:datasetPath];
+
+        NSString *lookingAtPath = [metadata objectForKey:CLDMetadataKeyLookingAtPath];
+        if (lookingAtPath) self.lookingAtURL = [NSURL fileURLWithPath:lookingAtPath];
         
         NSNumber *viewLightState = [metadata objectForKey:CLDMetadataKeyViewLightState];
         if (viewLightState) self.viewLightState = [viewLightState boolValue];
@@ -624,6 +646,9 @@ static NSString * const CLDMetadataKeyViewGaze = @"gaze";
         
         NSNumber *viewGaze = [metadata objectForKey:CLDMetadataKeyViewGaze];
         if (viewGaze) self.viewGaze = [viewGaze boolValue];
+
+        NSNumber *viewLookingAt = [metadata objectForKey:CLDMetadataKeyViewLookingAt];
+        if (viewLookingAt) self.viewLookingAt = [viewLookingAt boolValue];
         
         self.freeSceneViewPovs = [[metadata objectForKey:CLDMetadataKeyViewPovs] mutableCopy];
     }
