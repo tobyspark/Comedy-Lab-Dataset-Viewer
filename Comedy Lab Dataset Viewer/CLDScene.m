@@ -594,7 +594,7 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
     
     // Start scan proper
     
-    NSArray *headerExpectedItems = @[@"AudienceID", @"TimeStamp", @"Light State While", @"Laugh State", @"Breathing Belt", @"Happy", @"Sad", @"Surprised", @"Angry", @"MouthOpen", @"Distance from Performer", @"Angle from Performer", @"Movement", @"isLookingAtPerformer", @"isLookingAtAudience", @"isBeingLookedAtByPerformer", @"isBeingLookedAtByAudienceMember", @"isLookingAtVPScreen"];
+    NSArray *headerExpectedItems = @[@"AudienceID", @"TimeStamp", @"Light State While", @"Laugh State", @"Breathing Belt", @"Happy", @"Sad", @"Surprised", @"Angry", @"MouthOpen", @"Distance from Performer", @"Angle from Performer", @"Moved", @"Rotated", @"isLookingAtPerformer", @"isLookingAtAudience", @"isBeingLookedAtByPerformer", @"isBeingLookedAtByAudienceMember", @"isLookingAtVPScreen"];
     
     // Parse header row
     NSString *header = nil;
@@ -788,10 +788,10 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
             }
         }
         
-        // isBeingLookedAtByPerformer, #15
+        // isBeingLookedAtByPerformer, #16
         {
             NSMutableArray *array = [subjectData objectForKey:@"isBeingLookedAt"];
-            NSString *entryString = entries[15];
+            NSString *entryString = entries[16];
             if (![entryString isEqualToString:@"n/a"])
             {
                 NSNumber* value = [NSNumber numberWithBool:![entryString boolValue]]; // Controls 'hidden' not 'visible'!
