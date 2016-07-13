@@ -1069,7 +1069,7 @@ static NSString * const isBeingLookedAtRPG = @"RPG";
             to++;
             
             // Move onto next subject
-            if (to >= kCLDdatumPerSubject)
+            if (to >= subjects)
             {
                 to = 0;
                 from++;
