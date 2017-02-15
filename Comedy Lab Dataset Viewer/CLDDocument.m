@@ -444,7 +444,7 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
     {
         self.viewShoreHappiness = !self.viewShoreHappiness;
     }
-    else if ([[sender title] isEqualToString:@"Gaze"])
+    else if ([[sender title] isEqualToString:@"Head pose"])
     {
         self.viewGaze = !self.viewGaze;
     }
@@ -502,7 +502,7 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
     [[viewMenu itemWithTitle:@"Laugh state"] setState:self.viewLaughState];
     [[viewMenu itemWithTitle:@"Chest expansion"] setState:self.viewBreathingBelt];
     [[viewMenu itemWithTitle:@"SHORE happiness"] setState:self.viewShoreHappiness];
-    [[viewMenu itemWithTitle:@"Gaze"] setState:self.viewGaze];
+    [[viewMenu itemWithTitle:@"Head pose"] setState:self.viewGaze];
     [[viewMenu itemWithTitle:@"Oriented-to"] setState:self.viewLookingAt];
     
     NSMenu* firstPersonMenu = [[NSMenu alloc] initWithTitle:@""];
