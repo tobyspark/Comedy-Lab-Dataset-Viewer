@@ -117,8 +117,7 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
 
     [self setPlayerBlurLayer:[CALayer layer]];
     CIFilter *blur = [CIFilter filterWithName:@"CIGaussianBlur"];
-    // TODO: blur size should scale with audienceRect
-    [blur setDefaults];
+    [blur setName:@"blur"];
     [self.playerBlurLayer setBackgroundFilters: @[blur]];
     [self.playerBlurLayer setMasksToBounds: YES];
     
@@ -717,6 +716,10 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
         [self.playerMaskLayer setFrame:audienceRect];
         [self.audienceSceneLayer setFrame:audienceRect];
         [self.performerSceneLayer setFrame:performerRect];
+        
+        // Make blur radius scale with rect size
+        int blurRadius = MAX(5, layerRect.size.width / 200);
+        [self.playerBlurLayer setValue:[NSNumber numberWithInt:blurRadius] forKeyPath:@"backgroundFilters.blur.inputRadius"];
         
         // This is a view not layer, but no-need to reinvent the wheel...
         CGFloat controlsHeight = 23;
