@@ -36,6 +36,7 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
 @property (strong) AVPlayer         *player;
 @property (strong) AVPlayerView     *playerView;
 @property (strong) AVPlayerLayer    *playerLayer;
+@property (strong) CALayer          *playerBlurLayer;
 @property (strong) CALayer          *playerMaskLayer;
 @property (strong) SCNLayer         *audienceSceneLayer;
 @property (strong) SCNLayer         *performerSceneLayer;
@@ -80,6 +81,7 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
     // TASK: Make window layer backed
     
     [aController.window.contentView setWantsLayer:YES];
+    [aController.window.contentView setLayerUsesCoreImageFilters:YES];
     
     [self setSuperLayer:[(NSView*)aController.window.contentView layer]];
     
@@ -113,6 +115,13 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
     [self setPlayerLayer:[AVPlayerLayer layer]];
     [self.playerLayer setPlayer:self.player];
 
+    [self setPlayerBlurLayer:[CALayer layer]];
+    CIFilter *blur = [CIFilter filterWithName:@"CIGaussianBlur"];
+    // TODO: blur size should scale with audienceRect
+    [blur setDefaults];
+    [self.playerBlurLayer setBackgroundFilters: @[blur]];
+    [self.playerBlurLayer setMasksToBounds: YES];
+    
     [self setPlayerMaskLayer:[CALayer layer]];
     [self.playerMaskLayer setBackgroundColor:CGColorCreateGenericGray(0, 1)];
     [self.playerMaskLayer setOpacity:0];
@@ -128,6 +137,7 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
     // TASK: Set layers into tree
     
     [self.superLayer addSublayer:self.playerLayer];
+    [self.superLayer addSublayer:self.playerBlurLayer];
     [self.superLayer addSublayer:self.playerMaskLayer];
     [self.superLayer addSublayer:self.audienceSceneLayer];
     [self.superLayer addSublayer:self.performerSceneLayer];
@@ -687,6 +697,7 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
         CGRect performerRect = CGRectMake(videoRect.origin.x, videoRect.origin.y, videoRect.size.width/2.0, videoRect.size.height);
         
         [self.playerLayer setFrame:videoRect];
+        [self.playerBlurLayer setFrame:audienceRect];
         [self.playerMaskLayer setFrame:audienceRect];
         [self.audienceSceneLayer setFrame:audienceRect];
         [self.performerSceneLayer setFrame:performerRect];
