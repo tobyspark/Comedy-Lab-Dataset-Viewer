@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
@@ -148,6 +148,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="View" id="HyV-fh-RgO">
                         <items>
+                            <menuItem title="Blur audience" id="9Wj-Zq-avQ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleAudienceBlur:" target="-1" id="v7R-k4-Zrh"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Hide audience" id="1F7-8c-Uwz">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -252,6 +258,7 @@
                     </menu>
                 </menuItem>
             </items>
+            <point key="canvasLocation" x="469" y="139"/>
         </menu>
         <menuItem title="Format" id="jxT-CU-nIS">
             <modifierMask key="keyEquivalentModifierMask"/>

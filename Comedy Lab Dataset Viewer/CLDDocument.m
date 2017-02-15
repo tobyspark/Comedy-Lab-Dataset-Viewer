@@ -398,6 +398,19 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
     [self.freeSceneView setPovWithPersonNode:[sender representedObject]];
 }
 
+- (IBAction) toggleAudienceBlur:(id)sender
+{
+    bool hasLayer = [[self.superLayer sublayers] containsObject:self.playerBlurLayer];
+    if ([sender state] == NSOnState && hasLayer)
+    {
+        [self.playerBlurLayer removeFromSuperlayer];
+    }
+    else if ([sender state] == NSOffState && !hasLayer)
+    {
+        [self.superLayer insertSublayer:self.playerBlurLayer below:self.playerMaskLayer];
+    }
+}
+
 - (IBAction) toggleAudienceMask:(id)sender
 {
     // We move the audience camera a bit to get a better view when we're just looking at the 3D scene.
@@ -504,6 +517,9 @@ static NSString * const CLDMetadataKeyViewLookingAt = @"lookingAt";
     // CLDDocument is delegate only for the view menu
     NSMenu *viewMenu = menu;
     
+    bool hasBlurLayer = [[self.superLayer sublayers] containsObject:self.playerBlurLayer];
+    NSLog(@"hasBlurLayer: %@", hasBlurLayer ? @"Yes" : @"No");
+    [[viewMenu itemWithTitle:@"Blur audience"] setState:hasBlurLayer ? NSOnState : NSOffState];
     [[viewMenu itemWithTitle:@"Hide audience"] setState:self.playerMaskLayer.opacity == 1.0 ? NSOnState : NSOffState];
     
     [[viewMenu itemWithTitle:@"Loop"] setState:self.loop];
