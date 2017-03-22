@@ -24,6 +24,7 @@
 		A611FC34192269A9008E0ABD /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC33192269A9008E0ABD /* AVKit.framework */; };
 		A611FC3519227066008E0ABD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A611FC3119226938008E0ABD /* AVFoundation.framework */; };
 		A611FC3E1922E144008E0ABD /* CLDScene.m in Sources */ = {isa = PBXBuildFile; fileRef = A611FC3D1922E144008E0ABD /* CLDScene.m */; };
+		A64D280D1E82F745009176E6 /* CLDApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A64D280C1E82F745009176E6 /* CLDApplicationDelegate.m */; };
 		A6AAD8621949F0CE004CE36A /* CLDView.m in Sources */ = {isa = PBXBuildFile; fileRef = A6AAD8611949F0CE004CE36A /* CLDView.m */; };
 		A6AB02D61952DA5900298567 /* comedylab square 512.png in Resources */ = {isa = PBXBuildFile; fileRef = A6AB02D51952DA5900298567 /* comedylab square 512.png */; };
 		A6C458CC1976F3A800845CCC /* CLDRegister3D Audience video frame guides.png in Resources */ = {isa = PBXBuildFile; fileRef = A6C458CB1976F3A800845CCC /* CLDRegister3D Audience video frame guides.png */; };
@@ -66,6 +67,8 @@
 		A611FC33192269A9008E0ABD /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		A611FC3C1922E144008E0ABD /* CLDScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLDScene.h; sourceTree = "<group>"; };
 		A611FC3D1922E144008E0ABD /* CLDScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLDScene.m; sourceTree = "<group>"; };
+		A64D280B1E82F745009176E6 /* CLDApplicationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLDApplicationDelegate.h; sourceTree = "<group>"; };
+		A64D280C1E82F745009176E6 /* CLDApplicationDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLDApplicationDelegate.m; sourceTree = "<group>"; };
 		A6AAD8601949F0CE004CE36A /* CLDView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLDView.h; sourceTree = "<group>"; };
 		A6AAD8611949F0CE004CE36A /* CLDView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CLDView.m; sourceTree = "<group>"; };
 		A6AB02D51952DA5900298567 /* comedylab square 512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "comedylab square 512.png"; sourceTree = "<group>"; };
@@ -147,6 +150,8 @@
 			children = (
 				A611FC0819225EBE008E0ABD /* CLDDocument.h */,
 				A611FC0919225EBE008E0ABD /* CLDDocument.m */,
+				A64D280B1E82F745009176E6 /* CLDApplicationDelegate.h */,
+				A64D280C1E82F745009176E6 /* CLDApplicationDelegate.m */,
 				A611FC3C1922E144008E0ABD /* CLDScene.h */,
 				A611FC3D1922E144008E0ABD /* CLDScene.m */,
 				A6AAD8601949F0CE004CE36A /* CLDView.h */,
@@ -297,6 +302,7 @@
 				A611FC0A19225EBE008E0ABD /* CLDDocument.m in Sources */,
 				A6AAD8621949F0CE004CE36A /* CLDView.m in Sources */,
 				A611FC3E1922E144008E0ABD /* CLDScene.m in Sources */,
+				A64D280D1E82F745009176E6 /* CLDApplicationDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
