@@ -19,6 +19,9 @@
 @property (weak) SCNNode *subjectNode;
 @property (strong) NSArray *subjectNodes;
 @property NSTimeInterval timeOffset;
+@property BOOL    isCone;
+@property CGFloat cylinderRadius;
+@property double  coneAngle;
 #endif
 
 @end

@@ -40,21 +40,54 @@
     self.pointOfView = camera;
     
     #ifdef DEBUG
-    SCNNode* test = [[self.scene rootNode] childNodeWithName:@"gazeAsCylinder" recursively:YES];
-    if (test)
     {
-        [test removeFromParentNode];
-    }
-    else
-    {
-        test = [SCNNode nodeWithGeometry:[SCNCylinder cylinderWithRadius:700 height:6000]];
-        [test setName:@"gazeAsCylinder"];
-        [test setPosition:SCNVector3Make(0, 3000, 0)];
-    }
+        SCNNode* test = [[self.scene rootNode] childNodeWithName:@"gazeTest" recursively:YES];
+        if (test)
+        {
+            [test removeFromParentNode];
+        }
     
-    [[person childNodeWithName:@"gaze" recursively:NO] addChildNode:test];
+        if (self.coneAngle < 1) self.coneAngle = 43;
+        if (self.cylinderRadius < 1) self.cylinderRadius = 700;
+    
+        test = [SCNNode node];
+        [test setName:@"gazeTest"];
+    
+        SCNNode* testGeomNode = [SCNNode node];
+        [testGeomNode setName:@"gazeGeom"];
+        [testGeomNode setPosition:SCNVector3Make(0, 3000, 0)];
+        [test addChildNode:testGeomNode];
+        [self updateGazeGeom];
+        
+        SCNLight *light = [SCNLight light];
+        light.type = SCNLightTypeOmni;
+        light.color = [NSColor colorWithWhite:0.5 alpha:1.0];
+        [test setLight:light];
+        
+        [test setOpacity:0.9];
+        [[person childNodeWithName:@"gaze" recursively:NO] addChildNode:test];
+    }
     #endif
 }
+
+#ifdef DEBUG
+- (void) updateGazeGeom
+{
+    SCNNode* test = [[self.scene rootNode] childNodeWithName:@"gazeGeom" recursively:YES];
+    if (test)
+    {
+        if (self.isCone)
+        {
+            double viewAngle = GLKMathDegreesToRadians(self.coneAngle);
+            [test setGeometry:[SCNCone coneWithTopRadius:tan(viewAngle/2) * 6000 bottomRadius:0 height:6000]];
+        }
+        else
+        {
+            [test setGeometry:[SCNTube tubeWithInnerRadius:self.cylinderRadius-1 outerRadius:self.cylinderRadius height:6000]];
+        }
+    }
+}
+#endif
 
 // Only have tweakage when running in debug mode (ie. direct from Xcode).
 #ifdef DEBUG
@@ -315,7 +348,7 @@
         [self nudgeCameraNodeAroundZ:0 aroundY:0 aroundX:0];
     }
     
-#pragma mark Key handlers - temporal sync
+    #pragma mark Key handlers - temporal sync
     
     else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"-"])
     {
@@ -327,6 +360,45 @@
     {
         self.timeOffset += 0.1;
         NSLog(@"timeOffset: %f", self.timeOffset);
+    }
+    
+    #pragma mark Key handlers - hit test
+
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"q"])
+    {
+        self.isCone = YES;
+        self.coneAngle -= 1;
+        
+        [self updateGazeGeom];
+        
+        NSLog(@"cone angle: %f", self.coneAngle);
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"w"])
+    {
+        self.isCone = YES;
+        self.coneAngle += 1;
+        
+        [self updateGazeGeom];
+        
+        NSLog(@"cone angle: %f", self.coneAngle);
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"a"])
+    {
+        self.isCone = NO;
+        self.cylinderRadius -= 10;
+        
+        [self updateGazeGeom];
+        
+        NSLog(@"cylinderRadius: %f", self.cylinderRadius);
+    }
+    else if ([[theEvent charactersIgnoringModifiers] isEqualTo:@"s"])
+    {
+        self.isCone = NO;
+        self.cylinderRadius += 10;
+        
+        [self updateGazeGeom];
+        
+        NSLog(@"cylinderRadius: %f", self.cylinderRadius);
     }
     
     // Pass onto 'moveUp/Down/Left/Right' methods

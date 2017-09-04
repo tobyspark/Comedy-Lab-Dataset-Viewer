@@ -36,6 +36,7 @@
 - (IBAction) freeSceneViewAddCurrentPov:(id)sender;
 - (IBAction) freeSceneViewSetCurrentPov:(id)sender;
 - (IBAction) freeSceneViewSetPovToFirstPerson:(id)sender;
+- (IBAction) toggleAudienceBlur:(id)sender;
 - (IBAction) toggleAudienceMask:(id)sender;
 - (IBAction) toggleDataView:(id)sender;
 - (IBAction) toggleLoop:(id)sender;
